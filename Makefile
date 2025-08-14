@@ -25,7 +25,7 @@ SRC_DIR = srcs/
 INVALID_FILE = empty_file.conf
 
 # Liste des fichiers source
-SRC_FILES = main.c File.cpp Server.cpp Client.cpp 
+SRC_FILES = main.c File.cpp Server.cpp Client.cpp Request.cpp
 			
 # Transforme chaque fichier source en un fichier objet dans $(OBJ_DIR)
 OBJS = $(addprefix $(OBJ_DIR), $(SRC_FILES:.c=.o))
