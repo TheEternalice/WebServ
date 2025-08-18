@@ -6,14 +6,14 @@
 #    By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/08/14 15:47:01 by lde-merc          #+#    #+#              #
-#    Updated: 2025/08/14 15:58:34 by lde-merc         ###   ########.fr        #
+#    Updated: 2025/08/18 15:47:00 by ade-rese         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
-vpath %.c srcs 
+vpath %.cpp srcs 
 vpath %.conf conf_file
 
-NAME = cub3D
+NAME = webserv
 
 CXX = c++
 CXXFLAGS = -Wall -Werror -Wextra -g -I $(INCLUDES)
@@ -25,15 +25,15 @@ SRC_DIR = srcs/
 INVALID_FILE = empty_file.conf
 
 # Liste des fichiers source
-SRC_FILES = main.c File.cpp Server.cpp Client.cpp Request.cpp
+SRC_FILES = main.cpp File.cpp Server.cpp Client.cpp Request.cpp
 			
 # Transforme chaque fichier source en un fichier objet dans $(OBJ_DIR)
-OBJS = $(addprefix $(OBJ_DIR), $(SRC_FILES:.c=.o))
+OBJS = $(addprefix $(OBJ_DIR), $(SRC_FILES:.cpp=.o))
 
 all: mkdir_obj $(NAME)
 
-# Compilation des fichiers .c en .o dans le dossier $(OBJ_DIR)
-$(OBJ_DIR)%.o: %.c
+# Compilation des fichiers .cpp en .o dans le dossier $(OBJ_DIR)
+$(OBJ_DIR)%.o: %.cpp
 	@$(CC) $(CFLAGS) -c $< -o $@
 
 # Création du dossier objs/ et des sous-répertoires s'ils n'existent pas
