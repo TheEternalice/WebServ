@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   File.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
+/*   By: gebz <gebz@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/14 15:59:09 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/08/14 16:40:21 by lde-merc         ###   ########.fr       */
+/*   Updated: 2025/08/21 13:11:45 by gebz             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,4 +34,11 @@ File &File::operator=(const File &other) {
 		this->_oss = other._oss;
     }
     return *this;
+}
+
+File::openfile() {
+    std::ifstream file(_name);
+    if (!file.is_open){
+        throw std::err << "Cannot open config file" + _name << std::endl; 
+    }
 }
