@@ -12,18 +12,22 @@
 
 #include <iostream>
 #include <stdexcept>
-#include "File.hpp"
-#include "Server.hpp"
+// #include "../includes/File.hpp"
+#include "../includes/Server.hpp"
 
 
 
 int main(int argc, char *argv[]) {
 	try {
-		File conf_file(argv[1]);
+		// File conf_file(argv[1]);
+		std::cout << "Hello World!" << std::endl;
 		Server serv = Server();
 
+		std::cout << "Middle Earth!" << std::endl;
+
 		serv.init();
-		serv.run();
+		std::cout << "End World!" << std::endl;
+		// serv.run();
 	} catch (std::exception& e){
 		std::cout << e.what() << std::endl;
 	}

@@ -15,6 +15,8 @@
 #include <ctime>
 #include <string>
 
+#include "Request.hpp"
+
 class Client {
 	public:
 		Client();
@@ -32,4 +34,5 @@ class Client {
 		bool _sending;
 		std::string _header;
 		time_t _last_activity;
+		Request _curretnReq;
 };

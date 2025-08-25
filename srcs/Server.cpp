@@ -10,10 +10,19 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "Server.hpp"
+#include "../includes/Server.hpp"
+
+
+std::map<int, Request> Server::static_responses;
 
 // Constructeur
-Server::Server() {}
+Server::Server() {
+	this->_port = 8080;
+	this->static_responses[404] = Request::make_404();
+	this->static_responses[405] = Request::make_405();
+	this->static_responses[500] = Request::make_500();
+
+}
 
 Server::~Server() {}
 
@@ -44,10 +53,10 @@ void Server::init() {
 		exit(1);
 	}
 
-	memset(this->_address, 0, sizeof(this->_address));
-	this->_address->sin_family = AF_INET;
-	this->_address->sin_addr.s_addr = INADDR_ANY;
-	this->_address->sin_port = htons(this->_port);
+	memset(&_address, 0, sizeof(_address));
+	_address.sin_family = AF_INET;
+	_address.sin_addr.s_addr = INADDR_ANY;
+	_address.sin_port = htons(_port);
 
 	int opt = 1;
 	if (setsockopt(this->_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0) {
@@ -56,7 +65,7 @@ void Server::init() {
 		exit(EXIT_FAILURE);
 	}
 
-	if (bind(this->_fd, (struct sockaddr *)this->_address, sizeof(*this->_address)) < 0) {
+	if (bind(this->_fd, (struct sockaddr *)&_address, sizeof(_address)) < 0) {
 		std::cerr << "Failed to bind socket" << std::endl;
 		close(this->_fd);
 		exit(EXIT_FAILURE);

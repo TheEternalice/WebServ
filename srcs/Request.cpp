@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "Request.hpp"
+#include "../includes/Request.hpp"
 
 // Constructeur
 Request::Request() {}
@@ -37,4 +37,37 @@ std::string Request::get_content_type(const std::string &path) {
 	if (path.size() >= 4 && path.substr(path.size()-4) == ".jpg")  return "image/jpeg";
 	if (path.size() >= 4 && path.substr(path.size()-4) == ".png")  return "image/png";
 	return "application/octet-stream";
+}
+
+Request Request::make_404() {
+	Request r;
+	r.response_body = "404 Not Found";
+	r.response_headers =
+		"HTTP/1.1 404 Not Found\r\n"
+		"Content-Type: text/plain\r\n"
+		"Content-Length: " + std::to_string(r.response_body.size()) + "\r\n"
+		"\r\n";
+	return r;
+}
+
+Request Request::make_405() {
+	Request r;
+	r.response_body = "405 Method Not Allowed";
+	r.response_headers =
+		"HTTP/1.1 405 Method Not Allowed\r\n"
+		"Content-Type: text/plain\r\n"
+		"Content-Length: " + std::to_string(r.response_body.size()) + "\r\n"
+		"\r\n";
+	return r;
+}
+
+Request Request::make_500() {
+	Request r;
+	r.response_body = "500 Internal Server Error";
+	r.response_headers =
+		"HTTP/1.1 500 Internal Server Error\r\n"
+		"Content-Type: text/plain\r\n"
+		"Content-Length: " + std::to_string(r.response_body.size()) + "\r\n"
+		"\r\n";
+	return r;
 }

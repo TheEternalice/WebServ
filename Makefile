@@ -10,30 +10,31 @@
 #                                                                              #
 # **************************************************************************** #
 
-vpath %.c srcs 
+vpath %.cpp srcs 
 vpath %.conf conf_file
 
-NAME = cub3D
+NAME = webserv
 
 CXX = c++
-CXXFLAGS = -Wall -Werror -Wextra -g -I $(INCLUDES)
+CXXFLAGS = -MMD -Wall -Werror -Wextra -g -std=c++98
 
 INCLUDES = includes/
 OBJ_DIR = objs/
 SRC_DIR = srcs/
+DEP		:= $(OBJ:.o=.d)
 
 INVALID_FILE = empty_file.conf
 
 # Liste des fichiers source
-SRC_FILES = main.c File.cpp Server.cpp Client.cpp Request.cpp
+SRC_FILES = main.cpp Server.cpp Client.cpp Request.cpp
 			
 # Transforme chaque fichier source en un fichier objet dans $(OBJ_DIR)
-OBJS = $(addprefix $(OBJ_DIR), $(SRC_FILES:.c=.o))
+OBJS = $(addprefix $(OBJ_DIR), $(SRC_FILES:.cpp=.o))
 
 all: mkdir_obj $(NAME)
 
 # Compilation des fichiers .c en .o dans le dossier $(OBJ_DIR)
-$(OBJ_DIR)%.o: %.c
+$(OBJ_DIR)%.o: %.cpp
 	@$(CC) $(CFLAGS) -c $< -o $@
 
 # Création du dossier objs/ et des sous-répertoires s'ils n'existent pas
@@ -42,14 +43,8 @@ mkdir_obj:
 
 # Compilation finale
 $(NAME): $(OBJS)
-	@echo "\033[34mmlx en cours\033[0m"
-	@make -C mlx all > /dev/null 2>&1
-	@echo "\033[0;32mSUCCESS !\033[0m \033[0;33mmlx\033[0m"
-	@echo "\033[34mlibft en cours\033[0m"
-	@make -C libft all --silent
-	@echo "\033[0;32mSUCCESS !\033[0m \033[0;33mlibft\033[0m"
 	@echo "\033[34mCompilation $(NAME) en cours\033[0m"
-	@$(CC) $(OBJS) $(FLAGS) -o $(NAME)
+	@$(CXX) $(OBJS) $(FLAGS) -o $(NAME)
 	@echo "\033[0;32mSUCCESS !\033[0m \033[0;33m$(NAME)\033[0m"
 
 clean:
@@ -59,10 +54,10 @@ clean:
 fclean: clean
 	@rm -f $(NAME)
 	@echo "\033[0;35mDeleting everything !\033[0m"
-	@make -C libft fclean --silent
-	@make -C mlx clean > /dev/null 2>&1
 
 re: fclean all
+
+-include $(DEP)
 
 val: all
 	valgrind --leak-check=full --show-leak-kinds=all ./$(NAME) || true

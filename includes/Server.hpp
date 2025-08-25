@@ -23,6 +23,7 @@
 #include <sys/stat.h>
 #include <cerrno>
 #include <fcntl.h>
+#include "Request.hpp"
 
 class Server {
 	public:
@@ -38,6 +39,8 @@ class Server {
 	private:
 		int _port;
 		int _fd;
-		struct sockaddr_in* _address;
+		struct sockaddr_in _address;
+
+		static std::map<int, Request> static_responses; //Global answers : 404, 405, 500
 		
 };
