@@ -24,7 +24,7 @@ class LocationConfig
 		bool _autoIndex;
 		std::vector<std::string> _allowedMethods;
 		std::vector<std::string> _cgiExtensions;
-		std::string _returnPath
+		std::string _returnPath;
 	public:
 		LocationConfig();
 		LocationConfig(LocationConfig const &LocationConfig);
