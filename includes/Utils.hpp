@@ -1,29 +1,17 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Client.cpp                                         :+:      :+:    :+:   */
+/*   Utils.hpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: gebz <gebz@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/08/14 15:47:06 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/08/25 01:34:22 by gebz             ###   ########.fr       */
+/*   Created: 2025/08/25 01:14:48 by gebz              #+#    #+#             */
+/*   Updated: 2025/08/25 01:15:44 by gebz             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../includes/Client.hpp"
+#pragma once
 
-// Constructeur
-Client::Client() {}
+#include "File.hpp"
 
-Client::~Client() {}
-
-Client::Client(const Client &other) {
-    *this = other;
-}
-
-Client &Client::operator=(const Client &other) {
-    if (this != &other) {
-        // copy attributes here
-    }
-    return *this;
-}
+std::string trim(const std::string& str);

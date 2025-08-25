@@ -15,6 +15,18 @@
 #include <vector>
 #include <map>
 #include <algorithm>
+#include <string>
+
+struct NotPrimarieElement
+{
+	std::string path;
+	std::string root;
+	bool autoIndex;
+	std::vector<std::string> allowedMethods;
+	std::vector<std::string> cgiExtensions;
+	std::string returnPath;
+	size_t max_body_size;
+};
 
 class LocationConfig
 {
@@ -24,7 +36,7 @@ class LocationConfig
 		bool _autoIndex;
 		std::vector<std::string> _allowedMethods;
 		std::vector<std::string> _cgiExtensions;
-		std::string _returnPath
+		std::string _returnPath;
 	public:
 		LocationConfig();
 		LocationConfig(LocationConfig const &LocationConfig);

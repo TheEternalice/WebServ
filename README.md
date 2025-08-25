@@ -58,7 +58,15 @@ ca ressemble donc a ca :
 ### CGI (Common Gateway Interface) :
 		src -> https://fr.wikipedia.org/wiki/Common_Gateway_Interface
 		au lieu du HTML nous pouvons executer du code sur le serveur, La CGI permet la transmission la requette qu serveur et comment la recuperer.
-		
+
+## Class et fonctions Utiles :
+
+1. std::string -> https://cplusplus.com/reference/string/string/
+
+2. std::vector -> https://cplusplus.com/reference/vector/vector/
+
+3. open
+
 ## plan pour le realiser :
 
 ### 1. Parsing du fichier de configuration
