@@ -6,7 +6,7 @@
 /*   By: gebz <gebz@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/14 15:59:09 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/08/25 02:36:28 by gebz             ###   ########.fr       */
+/*   Updated: 2025/08/25 03:01:32 by gebz             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -85,7 +85,7 @@ void File::parsing_serv(std::ifstream& file, ServerBlock& server)
 		if (line[0] == '}')
 			break;
 		std::vector<std::string> tokens;
-		tokens = cpp_split(line, '');	
+		tokens = cpp_split(line, ' ');	
 	}
 }
 
