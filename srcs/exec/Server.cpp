@@ -6,11 +6,11 @@
 /*   By: gebz <gebz@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/14 15:47:12 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/08/25 01:34:07 by gebz             ###   ########.fr       */
+/*   Updated: 2025/08/25 13:43:23 by gebz             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../includes/Server.hpp"
+#include "../../includes/exec/Server.hpp"
 
 // Constructeur
 Server::Server() {}

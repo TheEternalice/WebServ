@@ -6,7 +6,7 @@
 /*   By: gebz <gebz@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/14 15:59:04 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/08/25 01:52:39 by gebz             ###   ########.fr       */
+/*   Updated: 2025/08/25 17:43:18 by gebz             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,16 +17,10 @@
 #include <sstream>
 #include <fstream>
 #include <vector>
-#include "parsing/LocationConfig.hpp"
-#include "Utils.hpp"
+#include "Config.hpp"
+#include "../Utils.hpp"
 
-struct ServerBlock
-{
-	std::string host; 
-	int	port;
-	std::vector<std::string> error_pages;
-	std::vector<NotPrimarieElement> npe;
-};
+struct ServerBlock;
 
 class File {
 	public:
@@ -47,10 +41,11 @@ class File {
 			public:
 				virtual const char* what() const throw();
 		};
+		void lexer_cpp(std::vector<std::string>& tokens, ServerBlock& server);
 		
 	private:
 		std::string _name;
-		std::vector<std::string> _servers;
+		std::vector<ServerBlock> _servers;
 		char **_oss;
 
 		void parsing_serv(std::ifstream& file, ServerBlock& server);

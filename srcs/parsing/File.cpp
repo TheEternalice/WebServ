@@ -6,11 +6,11 @@
 /*   By: gebz <gebz@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/14 15:59:09 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/08/25 03:01:32 by gebz             ###   ########.fr       */
+/*   Updated: 2025/08/25 17:42:41 by gebz             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../includes/File.hpp"
+#include "../../includes/parsing/File.hpp"
 
 // Constructeur
 File::File() {}
@@ -30,6 +30,7 @@ File &File::operator=(const File &other) {
     if (this != &other) {
         // copy attributes here
 		this->_name = other._name;
+		this->_servers = other._servers;
 		this->_oss = other._oss;
     }
     return *this;
@@ -64,20 +65,34 @@ bool File::openfile() {
 		line = trim(line);
         if (line.empty() || line.at(0) == '#')
 			continue;
-		if (line == "server")
+		if (line == "server {")
 		{
-			std::cout << "ok c'est bon on rentre bien ici" << std::endl;
 			ServerBlock serv;
 			parsing_serv(file, serv);
-			// moment de recuperer les ressources du serveur;
-		}
+			_servers.push_back(serv);		}
     }
 	file.close();
 	return !this->_servers.empty();
 }
 
-void File::parsing_serv(std::ifstream& file, ServerBlock& server)
-{
+void File::lexer_cpp(std::vector<std::string>& tokens, ServerBlock& server) {
+	std::string instruction[5] = {"listen", "server_name", "client_max_body_syze", "error_page", "location"};
+		
+	ExtractFunction function[5] = {
+		&extract_listen,
+		&extract_serverName,
+		&extract_maxBodySyze,
+		&extract_errorPage,
+		&extract_location
+	};
+	
+	for (size_t i = 0; i < 5; i++){
+		if (tokens[0] == instruction[i])
+			function[i](tokens, server);
+	}
+}
+
+void File::parsing_serv(std::ifstream& file, ServerBlock& server) {
 	std::string line;
 	while (std::getline(file, line))
 	{
@@ -85,7 +100,10 @@ void File::parsing_serv(std::ifstream& file, ServerBlock& server)
 		if (line[0] == '}')
 			break;
 		std::vector<std::string> tokens;
-		tokens = cpp_split(line, ' ');	
+		tokens = cpp_split(line, ' ');
+		if (tokens.empty())
+			continue;
+		lexer_cpp(tokens, server);
 	}
 }
 

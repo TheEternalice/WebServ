@@ -6,7 +6,7 @@
 #    By: gebz <gebz@student.42.fr>                  +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/08/14 15:47:01 by lde-merc          #+#    #+#              #
-#    Updated: 2025/08/25 01:38:16 by gebz             ###   ########.fr        #
+#    Updated: 2025/08/25 16:36:17 by gebz             ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -20,12 +20,19 @@ CXXFLAGS = -Wall -Werror -Wextra -g -I -std=c++98 $(INCLUDES)
 
 INCLUDES = includes/
 OBJ_DIR = objs/
-SRC_DIR = srcs/
+SRC_DIR = srcs
 
 INVALID_FILE = empty_file.conf not_good_name.con
 
 # Liste des fichiers source
-SRC_FILES = main.cpp File.cpp Server.cpp Client.cpp Request.cpp Utils.cpp
+SRC_FILES = main.cpp\
+			Utils.cpp\
+			parsing/Config.cpp\
+			parsing/File.cpp\
+			parsing/LocationConfig.cpp\
+			exec/Server.cpp\
+			exec/Client.cpp\
+			exec/Request.cpp
 			
 # Transforme chaque fichier source en un fichier objet dans $(OBJ_DIR)
 OBJS = $(addprefix $(OBJ_DIR), $(SRC_FILES:.cpp=.o))
@@ -34,6 +41,7 @@ all: mkdir_obj $(NAME)
 
 # Compilation des fichiers .cpp en .o dans le dossier $(OBJ_DIR)
 $(OBJ_DIR)%.o: %.cpp
+	@mkdir -p $(dir $@)
 	@$(CXX) $(CFLAGS) -c $< -o $@
 
 # Création du dossier objs/ et des sous-répertoires s'ils n'existent pas

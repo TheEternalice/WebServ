@@ -17,7 +17,7 @@
 #include <algorithm>
 #include <string>
 
-struct NotPrimarieElement
+struct LocationConfig
 {
 	std::string path;
 	std::string root;
@@ -26,20 +26,4 @@ struct NotPrimarieElement
 	std::vector<std::string> cgiExtensions;
 	std::string returnPath;
 	size_t max_body_size;
-};
-
-class LocationConfig
-{
-	private:
-		std::string _path;
-		std::string _root;
-		bool _autoIndex;
-		std::vector<std::string> _allowedMethods;
-		std::vector<std::string> _cgiExtensions;
-		std::string _returnPath;
-	public:
-		LocationConfig();
-		LocationConfig(LocationConfig const &LocationConfig);
-		LocationConfig &operator=(LocationConfig const &LocationConfig);
-		~LocationConfig();
 };
