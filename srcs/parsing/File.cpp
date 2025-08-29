@@ -6,7 +6,7 @@
 /*   By: gebz <gebz@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/14 15:59:09 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/08/25 17:42:41 by gebz             ###   ########.fr       */
+/*   Updated: 2025/08/26 15:17:12 by gebz             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,7 +75,7 @@ bool File::openfile() {
 	return !this->_servers.empty();
 }
 
-void File::lexer_cpp(std::vector<std::string>& tokens, ServerBlock& server) {
+void File::lexer_cpp(std::vector<std::string>& tokens, ServerBlock& server, std::ifstream& file) {
 	std::string instruction[5] = {"listen", "server_name", "client_max_body_syze", "error_page", "location"};
 		
 	ExtractFunction function[5] = {
@@ -88,7 +88,7 @@ void File::lexer_cpp(std::vector<std::string>& tokens, ServerBlock& server) {
 	
 	for (size_t i = 0; i < 5; i++){
 		if (tokens[0] == instruction[i])
-			function[i](tokens, server);
+			function[i](tokens, server, file);
 	}
 }
 
@@ -103,7 +103,7 @@ void File::parsing_serv(std::ifstream& file, ServerBlock& server) {
 		tokens = cpp_split(line, ' ');
 		if (tokens.empty())
 			continue;
-		lexer_cpp(tokens, server);
+		lexer_cpp(tokens, server, file);
 	}
 }
 

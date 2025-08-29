@@ -33,3 +33,5 @@ class ServerConfig
 		ServerConfig &operator=(ServerConfig const &ServerConfig);
 		~ServerConfig();
 };
+
+
