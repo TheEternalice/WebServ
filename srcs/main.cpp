@@ -6,13 +6,12 @@
 /*   By: gebz <gebz@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/14 15:54:02 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/08/25 17:45:09 by gebz             ###   ########.fr       */
+/*   Updated: 2025/09/02 11:17:25 by gebz             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <iostream>
 #include <stdexcept>
-#include "../includes/parsing/File.hpp"
 #include "../includes/exec/Server.hpp"
 
 static void print_error(std::string error)
@@ -26,10 +25,15 @@ int main(int argc, char *argv[]) {
 		return (print_error("Bad argument"), -1);
 	try {
 		file_name = argv[1];
-		File config(file_name);
-		if (!config.openfile())
-			return (print_error("Failed to load Configuration files"), -1);
-	//	Server serv = Server();
+		Server serv;
+		
+		if (serv.parsing(file_name)) {
+			std::cout << "Configuration file parsed successfully!" << std::endl;
+			serv.display_Serv();
+		} else {
+			std::cerr << "Failed to parse configuration file" << std::endl;
+			return -1;
+		}
 
 	//	serv.init();
 	//	serv.run();
