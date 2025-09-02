@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/14 15:54:02 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/08/14 16:39:25 by lde-merc         ###   ########.fr       */
+/*   Updated: 2025/09/01 12:26:53 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,7 @@ int main(int argc, char *argv[]) {
 
 		serv.init();
 		std::cout << "End World!" << std::endl;
-		// serv.run();
+		serv.run();
 	} catch (std::exception& e){
 		std::cout << e.what() << std::endl;
 	}
