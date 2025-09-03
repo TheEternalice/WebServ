@@ -6,7 +6,7 @@
 #    By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/08/14 15:47:01 by lde-merc          #+#    #+#              #
-#    Updated: 2025/08/14 15:58:34 by lde-merc         ###   ########.fr        #
+#    Updated: 2025/09/03 14:17:38 by lde-merc         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -26,7 +26,7 @@ DEP		:= $(OBJ:.o=.d)
 INVALID_FILE = empty_file.conf
 
 # Liste des fichiers source
-SRC_FILES = main.cpp Server.cpp Client.cpp Request.cpp
+SRC_FILES = main.cpp Server.cpp Client.cpp Request.cpp Reponse.cpp
 			
 # Transforme chaque fichier source en un fichier objet dans $(OBJ_DIR)
 OBJS = $(addprefix $(OBJ_DIR), $(SRC_FILES:.cpp=.o))

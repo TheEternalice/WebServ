@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 12:32:28 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/09/02 12:41:12 by lde-merc         ###   ########.fr       */
+/*   Updated: 2025/09/03 13:26:20 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,7 @@
 class Reponse {
 	public:
 		Reponse();
+		Reponse(std::string method, std::string url);
 		~Reponse();
 		Reponse(const Reponse &other);
 		
@@ -37,3 +38,4 @@ class Reponse {
 		std::map<std::string, std::string> _headers;
 		std::string _body;
 };
+

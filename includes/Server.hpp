@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/14 15:47:19 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/09/02 16:10:19 by lde-merc         ###   ########.fr       */
+/*   Updated: 2025/09/03 14:50:05 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,14 @@
 #include <cerrno>
 #include <fcntl.h>
 #include "Request.hpp"
+#include "Reponse.hpp"
+
+struct ServerSocket {
+    int fd;
+    struct sockaddr_in address;
+	socklen_t _addrlen;
+	int _port;
+};
 
 class Server {
 	public:
@@ -37,17 +45,15 @@ class Server {
 
 		void init();
 		void run();
-		void accept_client();
+		void accept_client(ServerSocket &s);
 		void handle_request(int i);
 		bool is_method_allowed(const std::string &method);
 		
 	private:
-		int _port;
-		int _fd;
+		// std::vector<int> _port;
 		std::vector<struct pollfd> _fds;
-		struct sockaddr_in _address;
-		socklen_t _addrlen;
-		static std::map<int, Request> _static_responses; //Global answers : 404, 405, 500
+		std::vector<ServerSocket> sockets;
+		static std::map<int, Reponse> _static_responses; //Global answers : 404, 405, 500
 		std::vector<std::string> _allowedMethods;
 		std::vector<std::string> _cgiExtensions;
 		

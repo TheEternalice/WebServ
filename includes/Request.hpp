@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/14 16:26:29 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/09/02 12:35:26 by lde-merc         ###   ########.fr       */
+/*   Updated: 2025/09/03 12:03:52 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,8 +24,10 @@ class Request {
 		
 		Request &operator=(const Request &other);
 
-		std::string get_content_type(const std::string &path);
 		static Request parse(const std::string &buffer);
+
+		std::string get_method() const;
+		std::string get_url() const;
 		
 
 	private:

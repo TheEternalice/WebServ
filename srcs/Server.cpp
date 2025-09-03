@@ -6,22 +6,27 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/14 15:47:12 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/09/02 12:06:19 by lde-merc         ###   ########.fr       */
+/*   Updated: 2025/09/03 14:54:11 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/Server.hpp"
 
 
-std::map<int, Request> Server::_static_responses;
+std::map<int, Reponse> Server::_static_responses;
 
 // Constructeur
 Server::Server() {
-	_port = 8080;
-	_addrlen = sizeof(_address);
-	_static_responses[404] = Request::make_404();
-	_static_responses[405] = Request::make_405();
-	_static_responses[500] = Request::make_500();
+	for (int i = 0; i < 4; i++) {
+		ServerSocket s;
+		s._port = 8080 + i;
+		sockets.push_back(s);
+	}
+	_static_responses[404] = Reponse::make_404();
+	_static_responses[405] = Reponse::make_405();
+	_static_responses[500] = Reponse::make_500();
+	_allowedMethods.push_back("GET");
+	_allowedMethods.push_back("POST");
 
 }
 
@@ -39,64 +44,70 @@ Server &Server::operator=(const Server &other) {
 }
 
 void Server::init() {
+	for(int i = 0; i < sockets.size(); i++) {
+		sockets[i].fd = socket(AF_INET, SOCK_STREAM, 0);
+		if (sockets[i].fd < 0) {
+			std::cerr << "Failed to create socket" << std::endl;
+			exit(EXIT_FAILURE);
+		}
+		// Set the socket to non-blocking mode
+		// This allows the server to handle multiple clients without blocking
+		int flags = fcntl(sockets[i].fd, F_GETFL, 0);
+		if (flags == -1) { std::cerr << "fcntl F_GETFL" << std::endl; exit(1); }
+		if (fcntl(sockets[i].fd, F_SETFL, flags | O_NONBLOCK) == -1) {
+			std::cerr << "fcntl F_SETFL" << std::endl;
+			exit(1);
+		}
 
-	_fd = socket(AF_INET, SOCK_STREAM, 0);
-	if (_fd < 0) {
-		std::cerr << "Failed to create socket" << std::endl;
-		exit(EXIT_FAILURE);
-	}
-	// Set the socket to non-blocking mode
-	// This allows the server to handle multiple clients without blocking
-	int flags = fcntl(_fd, F_GETFL, 0);
-	if (flags == -1) { perror("fcntl F_GETFL"); exit(1); }
-	if (fcntl(_fd, F_SETFL, flags | O_NONBLOCK) == -1) {
-		perror("fcntl F_SETFL");
-		exit(1);
-	}
+		memset(&sockets[i].address, 0, sizeof(sockets[i].address));
+		sockets[i].address.sin_family = AF_INET;
+		sockets[i].address.sin_addr.s_addr = INADDR_ANY;
+		sockets[i].address.sin_port = htons(sockets[i]._port);
 
-	memset(&_address, 0, sizeof(_address));
-	_address.sin_family = AF_INET;
-	_address.sin_addr.s_addr = INADDR_ANY;
-	_address.sin_port = htons(_port);
+		int opt = 1;
+		if (setsockopt(sockets[i].fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0) {
+			std::cerr << "setsockopt failed" << std::endl;
+			close(sockets[i].fd);
+			exit(EXIT_FAILURE);
+		}
 
-	int opt = 1;
-	if (setsockopt(_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0) {
-		std::cerr << "setsockopt failed" << std::endl;
-		close(_fd);
-		exit(EXIT_FAILURE);
-	}
+		if (bind(sockets[i].fd, (struct sockaddr *)&sockets[i].address, sizeof(sockets[i].address)) < 0) {
+			std::cerr << "Failed to bind socket" << std::endl;
+			for(int j = 0; j <= i; j++)
+				close(sockets[j].fd);
+			exit(EXIT_FAILURE);
+		}
 
-	if (bind(_fd, (struct sockaddr *)&_address, sizeof(_address)) < 0) {
-		std::cerr << "Failed to bind socket" << std::endl;
-		close(_fd);
-		exit(EXIT_FAILURE);
-	}
-
-	if (listen(_fd, 5) < 0) {
-		std::cerr << "Failed to listen on socket" << std::endl;
-		close(_fd);
-		exit(EXIT_FAILURE);
+		if (listen(sockets[i].fd, 5) < 0) {
+			std::cerr << "Failed to listen on socket" << std::endl;
+			for(int j = 0; j <= i; j++)
+				close(sockets[j].fd);
+			exit(EXIT_FAILURE);
+		}
 	}
 }
 
 void Server::run() {
-	struct pollfd pfd;
-	pfd = {_fd, POLLIN, 0}; // C++98 style, fd, events, revents
-	_fds.push_back(pfd);
-
+	for(size_t i = 0; i < sockets.size(); i++) {
+		struct pollfd pfd;
+		pfd = {sockets[i].fd, POLLIN, 0}; // C++98 style, fd, events, revents
+		_fds.push_back(pfd);
+	}
+	
 	while (true) {
-		int ret = poll(_fds.data(), _fds.size(), 100);
+		int ret = poll(&_fds[0], _fds.size(), 100);
 		if (ret < 0) {
 			if (errno == EINTR)  continue;
-			std::cerr << "Poll failed" << std::endl;
-			close(_fd);
+			std::cerr << "Poll error" << std::endl;
 			exit(EXIT_FAILURE);
 		}
 		if (ret == 0) continue;
 		
-		if (_fds[0].revents & POLLIN)
-			accept_client();
-		for(int i = 0; i < _fds.size(); i++) {
+		for(int i = 0; i < _fds.size(); i++){
+			if (_fds[i].revents & POLLIN)
+				accept_client(sockets[i]);
+		}
+		for(int i = sockets.size(); i < _fds.size(); i++) {
 			if (_fds[i].revents & POLLIN) {
 				handle_request(i);
 				i--; // on erase le client, donc on decremente l'index
@@ -105,19 +116,22 @@ void Server::run() {
 	}
 }
 
-void Server::accept_client() {
+void Server::accept_client(ServerSocket &s) {
 	int client_fd;
 	
-	client_fd = accept(_fd, (struct sockaddr *)&_address, &_addrlen);
-	if (client_fd < 0) {
-		std::cerr << "Failed to accept connection" << std::endl;
-		close(_fd);
-		exit(EXIT_FAILURE);
-	}
-	std::cout << "Client connected" << std::endl;
-	struct pollfd pfc;
-	pfc = {client_fd, POLLIN, 0}; // C++98 style, fd, events, revents
-	_fds.push_back(pfc);
+	client_fd = accept(s.fd, (struct sockaddr *)&s.address, &s._addrlen);
+    if (client_fd < 0) {
+        std::cerr << "Failed to accept client" << std::endl;
+        return;
+    }
+
+    std::cout << "Client connected on port " << s._port << std::endl;
+
+    struct pollfd pfc;
+    pfc.fd = client_fd;
+    pfc.events = POLLIN;
+    pfc.revents = 0;
+    _fds.push_back(pfc);
 }
 
 void Server::handle_request(int i) {
@@ -136,5 +150,24 @@ void Server::handle_request(int i) {
 	buffer[bytes_read] = '\0';
 	std::cout << "Received request:\n" << buffer << std::endl;
 	Request req = Request(buffer);
-	
+	if (is_method_allowed(req.get_method())) {
+		// Handle the request
+		
+		Reponse rep = Reponse(req.get_method(), req.get_url());
+		//...
+	} else {
+		Reponse res = _static_responses[405];
+		std::string response = res.to_string();
+		send(_fds[i].fd, response.c_str(), response.size(), 0);
+	}
+	close(_fds[i].fd);
+}
+
+bool Server::is_method_allowed(const std::string &method) {
+	// For simplicity, let's allow only GET and POST methods
+	for (size_t i = 0; i < _allowedMethods.size(); i++) {
+		if (_allowedMethods[i] == method)
+			return true;
+	}
+	return false;
 }
