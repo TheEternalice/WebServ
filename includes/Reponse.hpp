@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 12:32:28 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/09/03 13:26:20 by lde-merc         ###   ########.fr       */
+/*   Updated: 2025/09/04 14:48:20 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,8 @@
 #include <string>
 #include <map>
 #include <sstream>
+#include <fstream>
+#include <iostream>
 
 class Reponse {
 	public:
@@ -27,10 +29,13 @@ class Reponse {
 
 		std::string to_string() const;
 
-		static Reponse make_200(const std::string &body, const std::string &type="text/html");
+		static Reponse make_200(const std::string& body, const std::string& type);
 		static Reponse make_404();
 		static Reponse make_405();
 		static Reponse make_500();
+
+		int get_status_code() const;
+		std::string get_body() const;
 
 	private:
 		int _status_code;
