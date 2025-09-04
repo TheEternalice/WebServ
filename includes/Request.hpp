@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/14 16:26:29 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/09/04 13:28:19 by lde-merc         ###   ########.fr       */
+/*   Updated: 2025/09/04 16:32:19 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,10 @@
 #include <string>
 #include <map>
 #include <iostream>
+#include <unistd.h>
+#include <sys/wait.h>
+#include <fcntl.h>
+
 
 #include "Reponse.hpp"
 
@@ -34,6 +38,7 @@ class Request {
 		std::string get_url() const;
 
 		Reponse handle_get();
+		Reponse execute_cgi(std::string& path);
 		Reponse handle_post();
 		Reponse handle_delete();		
 

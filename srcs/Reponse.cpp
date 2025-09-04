@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 12:32:35 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/09/04 14:59:48 by lde-merc         ###   ########.fr       */
+/*   Updated: 2025/09/04 17:23:18 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -115,6 +115,23 @@ int Reponse::get_status_code() const {
 	return _status_code;
 }
 
+
 std::string Reponse::get_body() const {
 	return _body;
+}
+
+void Reponse::set_status_code(int code) {
+	_status_code = code;
+}
+
+void Reponse::set_status_text(const std::string& text) {
+	_status_text = text;
+}
+
+void Reponse::set_body(const std::string& body) {
+	_body = body;
+}
+
+void Reponse::set_header(const std::string& key, const std::string& value) {
+	_headers[key] = value;
 }
