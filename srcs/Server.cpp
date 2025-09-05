@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/14 15:47:12 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/09/04 15:03:35 by lde-merc         ###   ########.fr       */
+/*   Updated: 2025/09/05 15:57:43 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -184,6 +184,7 @@ void Server::handle_request(int i) {
 		std::cout << "Received request\n";
 		// std::cout << "Received request:\n" << buffer << std::endl;
 		Request req = Request(buffer);
+		// std::cout << "body = " << req.get_body() << std::endl;
 		Reponse res;
 		if (is_method_allowed(req.get_method())) {
 			// Handle the request
@@ -205,7 +206,7 @@ void Server::handle_request(int i) {
 			std::string response = res.to_string();
 			send(_fds[i].fd, response.c_str(), response.size(), 0);
 		}
-		close(_fds[i].fd);
+		// close(_fds[i].fd);
 	}
 }
 

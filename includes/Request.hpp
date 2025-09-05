@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/14 16:26:29 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/09/04 16:32:19 by lde-merc         ###   ########.fr       */
+/*   Updated: 2025/09/05 15:54:18 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,9 +36,11 @@ class Request {
 
 		std::string get_method() const;
 		std::string get_url() const;
+		std::string get_body() const;
 
 		Reponse handle_get();
-		Reponse execute_cgi(std::string& path);
+		Reponse execute_cgi_get(std::string& path);
+		Reponse execute_cgi_post(std::string& path, std::string& body);
 		Reponse handle_post();
 		Reponse handle_delete();		
 
@@ -48,8 +50,4 @@ class Request {
 		std::string _http_version; // HTTP/1.1
 		std::map<std::string, std::string> _headers; // "Host" -> "localhost:8080"
 		std::string _body;         // Corps de la requête (POST data)
-
-		// Pour le parsing progressif si tu utilises recv non bloquant
-		std::string buffer;       // tampon où tu accumules ce que tu lis
-		bool complete; 
 };

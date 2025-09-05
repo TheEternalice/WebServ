@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/14 15:47:19 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/09/04 16:31:11 by lde-merc         ###   ########.fr       */
+/*   Updated: 2025/09/05 10:39:56 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,8 +29,8 @@
 #include "Reponse.hpp"
 
 struct ServerSocket {
-    int fd;
-    struct sockaddr_in address;
+	int fd;
+	struct sockaddr_in address;
 	socklen_t _addrlen;
 	int _port;
 };
