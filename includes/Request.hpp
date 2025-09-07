@@ -6,7 +6,7 @@
 /*   By: ade-rese <ade-rese@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/14 16:26:29 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/09/03 23:26:35 by ade-rese         ###   ########.fr       */
+/*   Updated: 2025/09/07 14:00:53 by ade-rese         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,11 +29,14 @@ class Request {
 
 		std::string get_content_type(const std::string &path);
 		void parse(const std::string &buffer);
+		bool hasHeader(const std::string &buffer) const;
+		std::string parseChunked(const std::string &buffer);
 
 		const std::string &getMethod() const;
 		const std::string &getUrl() const;
 		const std::string &getHttpVersion() const;
 		const std::string &getBody() const;
+		std::string getHeader(const std::string &buffer) const;
 		
 
 	private:

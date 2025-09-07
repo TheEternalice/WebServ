@@ -6,7 +6,7 @@
 /*   By: ade-rese <ade-rese@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/14 16:26:26 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/09/03 23:35:12 by ade-rese         ###   ########.fr       */
+/*   Updated: 2025/09/07 14:12:18 by ade-rese         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,12 +46,6 @@ const std::string &Request::getBody() const {
 	return (_body);
 }
 
-// "GET /uri.cgi HTTP/1.1\r\n"
-// "User-Agent: Mozilla/5.0\r\n"
-// "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\r\n"
-// "Host: 127.0.0.1\r\n"
-// "\r\n";
-
 void Request::parse(const std::string &buffer) {
 	size_t	pos = buffer.rfind("\r\n\r\n");
 	if (pos == std::string::npos) {
@@ -75,8 +69,38 @@ void Request::parse(const std::string &buffer) {
 		std::string value = line.substr(colon + 1);
 		_headers[key] = value;
 	}
-	if (size_t len = _method.find("POST")) {_body = body.substr(0, len);}
-	// géré les chunked body ??????
+	if (hasHeader("Content-Length")) {
+		int len = std::stoi(getHeader("Content-Length"));
+		_body = body.substr(0, len);
+	}
+	else if (hasHeader("Transfer-Encoding") && getHeader("Transfer-Encoding") == "chunked") {_body = parseChunked(body);}
+	else {_body = body;}
+}
+
+bool Request::hasHeader(const std::string &buffer) const {return (_headers.find(buffer) != _headers.end());}
+
+std::string Request::getHeader(const std::string &buffer) const {
+	std::map<std::string, std::string>::const_iterator it = _headers.find(buffer);
+	if (it != _headers.end())
+		return (it->second);
+	return ("");
+}
+
+std::string Request::parseChunked(const std::string &buffer) {
+	std::string body;
+	size_t pos = 0;
+	
+	while (true) {
+		size_t endl = buffer.find("\r\n", pos);
+		if (endl == std::string::npos) break;
+		std::string str_sub = buffer.substr(pos, endl - pos);
+		int chunk_size = std::stoi(str_sub, nullptr, 16);
+		if (chunk_size == 0) break;
+		pos = endl + 2;
+		body += buffer.substr(pos, chunk_size);
+		pos += chunk_size + 2;
+	}
+	return (body);
 }
 
 std::string Request::get_content_type(const std::string &path) {
