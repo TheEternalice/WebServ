@@ -6,12 +6,14 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/14 16:26:26 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/09/05 16:03:52 by lde-merc         ###   ########.fr       */
+/*   Updated: 2025/09/08 11:30:39 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/Request.hpp"
 #include "../includes/Server.hpp"
+#include <cstring>
+extern char **environ;
 
 // Constructeur
 Request::Request() {}
@@ -217,73 +219,134 @@ Reponse Request::handle_post() {
 // Execute une cgi, on passe le body en STDIN au script
 Reponse Request::execute_cgi_post(std::string& url, std::string& body) {
 	std::string path = "." + url;
-	int pipe_in[2];  // Envoyer le body au script
-	int pipe_out[2]; // Lire la reponse du script
-	pipe(pipe_in);
-	pipe(pipe_out);
-	int flags = fcntl(pipe_out[0], F_GETFL, 0);
-	fcntl(pipe_out[0], F_SETFL, flags | O_NONBLOCK);
+	if (access(path.c_str(), X_OK) != 0) {
+		Reponse r;
+		r.set_status_code(-1);
+		return r;
+	}
 
+	int pipe_in[2];
+	int pipe_out[2];
+	if (pipe(pipe_in) == -1 || pipe(pipe_out) == -1) {
+		Reponse r;
+		r.set_status_code(500);
+		r.set_status_text("Pipe error");
+		return r;
+	}
 
 	pid_t pid = fork();
-	if (pid == 0){
-
-		std::cout << "body = " << body << std::endl;
-		std::cout << "body size = " << body.size() << " bytes" << std::endl;
-		
+	if (pid < 0) {
+		Reponse r;
+		r.set_status_code(500);
+		r.set_status_text("Fork error");
+		return r;
+	}
+	if (pid == 0) {
+		// Fils : redirige stdin, stdout, stderr
 		close(pipe_in[1]);
 		dup2(pipe_in[0], STDIN_FILENO);
 		close(pipe_in[0]);
 		close(pipe_out[0]);
 		dup2(pipe_out[1], STDOUT_FILENO);
+		dup2(pipe_out[1], STDERR_FILENO);
 		close(pipe_out[1]);
-		
-		char *args[] = {const_cast<char*>(path.c_str()), NULL};
-		// On construit un petit environnement pour le script CGI puisse lire sur stdin
-		std::vector<std::string> env;
-		env.push_back("REQUEST_METHOD=POST");
-		env.push_back("CONTENT_TYPE=application/x-www-form-urlencoded");
 
+		// Prépare l'environnement
+		std::vector<std::string> env_vec;
+		for (char **env = environ; *env != 0; env++) {
+			env_vec.push_back(std::string(*env));
+		}
 		std::ostringstream oss;
 		oss << body.size();
-		env.push_back("CONTENT_LENGTH=" + oss.str());
+		std::vector<std::string> cgi_vars;
+		cgi_vars.push_back("REQUEST_METHOD=POST");
+		cgi_vars.push_back("CONTENT_TYPE=application/x-www-form-urlencoded");
+		cgi_vars.push_back("CONTENT_LENGTH=" + oss.str());
+		cgi_vars.push_back("PATH=/usr/bin:/bin");
+		for (size_t i = 0; i < cgi_vars.size(); ++i) {
+			std::string key = cgi_vars[i].substr(0, cgi_vars[i].find('='));
+			bool found = false;
+			for (size_t j = 0; j < env_vec.size(); ++j) {
+				if (env_vec[j].find(key + "=") == 0) {
+					env_vec[j] = cgi_vars[i];
+					found = true;
+					break;
+				}
+			}
+			if (!found)
+				env_vec.push_back(cgi_vars[i]);
+		}
+		char **envp = new char*[env_vec.size() + 1];
+		for (size_t i = 0; i < env_vec.size(); i++)
+			envp[i] = strdup(env_vec[i].c_str());
+		envp[env_vec.size()] = NULL;
 
-		char **envp = new char*[env.size() + 1];
-		for (size_t i = 0; i < env.size(); i++)
-			envp[i] = strdup(env[i].c_str());
-		envp[env.size()] = NULL;
-
+		char *args[] = {const_cast<char*>(path.c_str()), NULL};
 		execve(path.c_str(), args, envp);
-		for (size_t i = 0; i < env.size(); i++) free(envp[i]);
+		perror("execve failed");
+		for (size_t i = 0; i < env_vec.size(); i++) free(envp[i]);
+		delete[] envp;
 		exit(1);
 	} else {
+		// Parent : écrit le body, lit la sortie
 		close(pipe_in[0]);
-		write(pipe_in[1], body.c_str(), body.size());
+		ssize_t written = 0;
+		while (written < (ssize_t)body.size()) {
+			ssize_t w = write(pipe_in[1], body.c_str() + written, body.size() - written);
+			if (w <= 0) break;
+			written += w;
+		}
 		close(pipe_in[1]);
-		
 		close(pipe_out[1]);
-		
+
 		char buffer[4096];
-		int bytes_read;
 		std::ostringstream oss;
-		while((bytes_read = read(pipe_out[0], buffer, sizeof(buffer))) > 0) {
+		ssize_t bytes_read;
+		while ((bytes_read = read(pipe_out[0], buffer, sizeof(buffer))) > 0) {
 			oss.write(buffer, bytes_read);
 		}
-		std::cerr << "CGI OUTPUT:\n" << oss.str() << std::endl;
-		waitpid(pid, NULL, 0);
 		close(pipe_out[0]);
-		
+		waitpid(pid, NULL, 0);
+
+		std::string cgi_output = oss.str();
+		std::string::size_type pos = cgi_output.find("\r\n\r\n");
+		if (pos == std::string::npos)
+			pos = cgi_output.find("\n\n");
+
+		std::map<std::string, std::string> headers;
+		std::string content;
+		if (pos != std::string::npos) {
+			std::string raw_headers = cgi_output.substr(0, pos);
+			content = cgi_output.substr(pos + 2);
+			std::istringstream hs(raw_headers);
+			std::string line;
+			while (std::getline(hs, line)) {
+				std::string::size_type sep = line.find(':');
+				if (sep != std::string::npos) {
+					std::string key = line.substr(0, sep);
+					std::string value = line.substr(sep + 1);
+					headers[key] = value;
+				}
+			}
+		} else {
+			content = cgi_output;
+		}
+
 		Reponse r;
 		r.set_status_code(200);
 		r.set_status_text("OK");
-		r.set_body(oss.str());
-		r.set_header("Content-Type", "text/plain");
+		r.set_body(content);
+		if (headers.find("Content-Type") != headers.end())
+			r.set_header("Content-Type", headers["Content-Type"]);
+		else
+			r.set_header("Content-Type", "text/plain");
 		std::ostringstream oss_len;
-		oss_len << r.get_body().size();
+		oss_len << content.size();
 		r.set_header("Content-Length", oss_len.str());
 		return r;
 	}
 }
+
 
 // Handle DELETE request
 /*******************************************************
