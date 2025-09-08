@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/14 16:26:26 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/09/08 11:30:39 by lde-merc         ###   ########.fr       */
+/*   Updated: 2025/09/08 12:01:49 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -352,10 +352,10 @@ Reponse Request::execute_cgi_post(std::string& url, std::string& body) {
 /*******************************************************
  * Equivalent du rm fichier mais pour le client
  * Interprete la request
-	 Existence et droit de supprimer par le client
+	 Existence et droit de supprimer par le client avec unlink()
 	* Retourne 200 si ok
 	* Retourne 404 si le fichier n'existe pas
-	* Retourne 403 si pas le droit
+	* Retourne 403 si c'est un repertoire
 	* Retourne 500 si erreur serveur
 *******************************************************/
 Reponse Request::handle_delete() {
