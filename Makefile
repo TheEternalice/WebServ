@@ -6,7 +6,7 @@
 #    By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/08/14 15:47:01 by lde-merc          #+#    #+#              #
-#    Updated: 2025/09/03 14:17:38 by lde-merc         ###   ########.fr        #
+#    Updated: 2025/09/08 14:41:10 by lde-merc         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -33,7 +33,7 @@ OBJS = $(addprefix $(OBJ_DIR), $(SRC_FILES:.cpp=.o))
 
 all: mkdir_obj $(NAME)
 
-# Compilation des fichiers .c en .o dans le dossier $(OBJ_DIR)
+# Compilation des fichiers .cpp en .o dans le dossier $(OBJ_DIR)
 $(OBJ_DIR)%.o: %.cpp
 	@$(CC) $(CFLAGS) -c $< -o $@
 
