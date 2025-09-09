@@ -6,7 +6,7 @@
 /*   By: gebz <gebz@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/14 15:47:12 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/09/02 11:32:36 by gebz             ###   ########.fr       */
+/*   Updated: 2025/09/09 13:43:17 by gebz             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -177,23 +177,23 @@ void Server::lexer_cpp(std::vector<std::string>& tokens, std::ifstream& file) {
 		&Server::extract_location
 	};
 
-	for (size_t i = 0; i < 5; i++){
+	for (size_t i = 0; i < 7; i++){
 		if (tokens[0] == instruction[i])
 			(this->*function[i])(tokens, file);
 	}
 }
 
 // DEBUT DE l'EXTRACT 2
-void Server::location_root(std::vector<std::string> tokens) {
+void Server::location_root(std::vector<std::string> tokens, LocationConfig& loc) {
 	if (tokens.size() < 2)
 		return ;
-	_root = tokens[1];
-	if (!_root.empty() && _root[_root.length() - 1] == ';'){
-		_root = _root.substr(0, _root.length() - 1);
+	loc.location_root = tokens[1];
+	if (!loc.location_root.empty() && loc.location_root[loc.location_root.length() - 1] == ';'){
+		loc.location_root = loc.location_root.substr(0, loc.location_root.length() - 1);
 	}
 }
 
-void Server::location_methods(std::vector<std::string> tokens){
+void Server::location_methods(std::vector<std::string> tokens, LocationConfig& loc){
 	if (tokens.size() < 2)
 		return ;
 	for (size_t i = 1; i < tokens.size(); i++){
@@ -201,32 +201,32 @@ void Server::location_methods(std::vector<std::string> tokens){
 		if (!method.empty() && method[method.length() - 1] == ';'){
 			method = method.substr(0, method.length() - 1);
 		}
-		_allowedMethods.push_back(method);
+		loc.allowedMethods.push_back(method);
 	}
 }
 
-void Server::location_return(std::vector<std::string> tokens){
+void Server::location_return(std::vector<std::string> tokens, LocationConfig& loc){
 	if (tokens.size() < 2)
 		return ;
-	_returnPath = tokens[1];
-	if (!_returnPath.empty() && _returnPath[_returnPath.length() - 1] == ';'){
-		_returnPath = _returnPath.substr(0, _returnPath.length() - 1);
+	loc.returnPath = tokens[1];
+	if (loc.returnPath.empty() && loc.returnPath[loc.returnPath.length() - 1] == ';'){
+		loc.returnPath = loc.returnPath.substr(0, loc.returnPath.length() - 1);
 	}
 }
 
-void Server::location_cgi(std::vector<std::string> tokens) {
+void Server::location_cgi(std::vector<std::string> tokens, LocationConfig& loc) {
 	if (tokens.size() < 2)
 		return ;
 	for (size_t i = 1; i < tokens.size(); i++){
-	std::string cgi = tokens[i];
-	if (!cgi.empty() && cgi[cgi.length() - 1] == ';'){
-		cgi = cgi.substr(0, cgi.length() - 1);
+		std::string cgi = tokens[i];
+		if (!cgi.empty() && cgi[cgi.length() - 1] == ';'){
+			cgi = cgi.substr(0, cgi.length() - 1);
 		}
-	_cgiExtensions.push_back(cgi);
+		loc.cgiExtensions.push_back(cgi);
 	}
 }
 
-void Server::location_autoindex(std::vector<std::string> tokens){
+void Server::location_autoindex(std::vector<std::string> tokens, LocationConfig& loc){
 	if (tokens.size() < 2)
 		return ;
 	std::string value = tokens[1];
@@ -234,47 +234,48 @@ void Server::location_autoindex(std::vector<std::string> tokens){
 		value = value.substr(0, value.length() - 1);
 	}
 	if (value == "on")
-		_autoIndex = true;
+		loc.autoIndex = true;
 	else if (value == "off")
-		_autoIndex = false;
+		loc.autoIndex = false;
 }
 
-void Server::location_index(std::vector<std::string> tokens){
+void Server::location_index(std::vector<std::string> tokens, LocationConfig& loc){
 	if (tokens.size() < 2)
 		return ;
-	_index = tokens[1];
-	if (!_index.empty() && _index[_index.length() - 1] == ';'){
-		_index = _index.substr(0, _index.length() - 1);
+	loc.location_index = tokens[1];
+	if (loc.location_index.empty() && loc.location_index[loc.location_index.length() - 1] == ';'){
+		loc.location_index = loc.location_index.substr(0, loc.location_index.length() - 1);
 	}
 }
 
-void Server::location_max_size(std::vector<std::string> tokens){
-	if (tokens.size() < 2)
-		return ;
-	std::string value = tokens[1];
-	if (!value.empty() && value[value.length() - 1] == ';'){
-		value = value.substr(0, value.length() - 1);
-	}
-	_max_body_size = atoi(value.c_str());
-}
-
-void Server::location_upload_dir(std::vector<std::string> tokens){
+void Server::location_max_size(std::vector<std::string> tokens, LocationConfig& loc){
 	if (tokens.size() < 2)
 		return ;
 	std::string value = tokens[1];
 	if (!value.empty() && value[value.length() - 1] == ';'){
 		value = value.substr(0, value.length() - 1);
 	}
-	_upload_dir = value;
+	loc.struct_max_body_size = atoi(value.c_str());
+}
+
+void Server::location_upload_dir(std::vector<std::string> tokens, LocationConfig& loc){
+	if (tokens.size() < 2)
+		return ;
+	std::string value = tokens[1];
+	if (!value.empty() && value[value.length() - 1] == ';'){
+		value = value.substr(0, value.length() - 1);
+	}
+	loc.upload_dir = value;
 }
 
 
 void Server::extract_location(std::vector<std::string>& tokens, std::ifstream& file) {
 	if (tokens.size() < 2 || !file)
 		return ;
+	LocationConfig loc;
 	std::string line;
-
-	_path = tokens[1];
+	
+	loc.path = tokens[1];
 	while (std::getline(file, line)) {
 		line = trim(line);
 
@@ -290,7 +291,7 @@ void Server::extract_location(std::vector<std::string>& tokens, std::ifstream& f
 		std::string instruction[8] = {"root", "allow_methods", "return", "cgi_extension", "autoindex",
 			"client_max_body_size", "index", "upload_dir"};
 
-		void (Server::*function[8])(std::vector<std::string>) = {
+		void (Server::*function[8])(std::vector<std::string>, LocationConfig& loc) = {
 			&Server::location_root,
 			&Server::location_methods,
 			&Server::location_return,
@@ -303,9 +304,10 @@ void Server::extract_location(std::vector<std::string>& tokens, std::ifstream& f
 
 		for (size_t i = 0; i < 8; i++) {
 		if (tokens[0] == instruction[i])
-			(this->*function[i])(tokens);
+			(this->*function[i])(tokens, loc);
 		}
 	}
+	find_element_route.push_back(loc);
 }
 
 
@@ -352,41 +354,58 @@ void Server::init() {
 
 void Server::display_Serv() {
 	if (!_host.empty())
-		std::cout << _host << std::endl;
+		std::cout << "Host: " << _host << std::endl;
 	if (_port)
-		std::cout << _port << std::endl;
+		std::cout << "Port: " << _port << std::endl;
 	if (!_server_name.empty()) {
+		std::cout << "Server names: ";
 		for (size_t i = 0; i < _server_name.size(); i++)
-			std::cout << _server_name[i] << std::endl;
+			std::cout << _server_name[i] << " ";
+		std::cout << std::endl;
 	}
 	if (!_error_pages.empty()) {
-		for (size_t j = 0; j < _error_pages.size(); j++)
-			std::cout << _error_pages[0] << std::endl;	
+		std::cout << "Error pages: ";
+		for (std::map<int, std::string>::iterator it = _error_pages.begin(); it != _error_pages.end(); ++it)
+			std::cout << it->first << " -> " << it->second << " ";
+		std::cout << std::endl;
 	}
-	if (!_max_body_size)
-		std::cout << _max_body_size << std::endl;
-	if (!_path.empty())
-		std::cout << _path << std::endl;
+	if (_max_body_size)
+		std::cout << "Max body size: " << _max_body_size << std::endl;
 	if (!_index.empty())
-		std::cout << _index << std::endl;
+		std::cout << "Index: " << _index << std::endl;
 	if (!_root.empty())
-		std::cout << _root << std::endl;
-	if (_autoIndex)
-		std::cout << _autoIndex << std::endl;
-		if (!_allowedMethods.empty()) {
-			for (size_t k = 0; k < _allowedMethods.size(); k++)
-				std::cout << _allowedMethods[k] << std::endl;
+		std::cout << "Root: " << _root << std::endl;
+	
+	if (!find_element_route.empty()) {
+		for (size_t i = 0; i < find_element_route.size(); i++) {
+			const LocationConfig& loc = find_element_route[i];
+			std::cout << "Location: " << loc.path << std::endl;
+			if (!loc.location_root.empty())
+				std::cout << "  Root: " << loc.location_root << std::endl;
+			if (!loc.allowedMethods.empty()) {
+				std::cout << "  Allowed methods: ";
+				for (size_t j = 0; j < loc.allowedMethods.size(); j++)
+					std::cout << loc.allowedMethods[j] << " ";
+				std::cout << std::endl;
+			}
+			if (!loc.returnPath.empty())
+				std::cout << "  Return: " << loc.returnPath << std::endl;
+			if (!loc.cgiExtensions.empty()) {
+				std::cout << "  CGI extensions: ";
+				for (size_t j = 0; j < loc.cgiExtensions.size(); j++)
+					std::cout << loc.cgiExtensions[j] << " ";
+				std::cout << std::endl;
+			}
+			std::cout << "  Autoindex: " << (loc.autoIndex ? "on" : "off") << std::endl;
+			if (loc.struct_max_body_size)
+				std::cout << "  Max body size: " << loc.struct_max_body_size << std::endl;
+			if (!loc.location_index.empty())
+				std::cout << "  Index: " << loc.location_index << std::endl;
+			if (!loc.upload_dir.empty())
+				std::cout << "  Upload dir: " << loc.upload_dir << std::endl;
+			std::cout << std::endl;
+		}
 	}
-	if (!_cgiExtensions.empty()) {
-		for (size_t l = 0; l < _cgiExtensions.size(); l++)
-			std::cout << _cgiExtensions[0] << std::endl;
-	}
-		
-	if (!_returnPath.empty())
-		std::cout << _returnPath << std::endl;
-	if (!_upload_dir.empty())
-		std::cout << _upload_dir << std::endl;
-
 }
 
 void Server::run() {

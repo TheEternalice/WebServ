@@ -6,7 +6,7 @@
 /*   By: gebz <gebz@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/14 15:47:19 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/09/02 11:32:17 by gebz             ###   ########.fr       */
+/*   Updated: 2025/09/09 13:19:39 by gebz             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,20 @@
 #include <fcntl.h>
 #include <map>
 #include "../Utils.hpp"
+
+
+struct LocationConfig
+{
+	std::string location_root;
+	std::vector<std::string> allowedMethods;
+	std::string returnPath;
+	std::vector<std::string> cgiExtensions;
+	bool autoIndex;
+	size_t struct_max_body_size;
+	std::string path;
+	std::string location_index;
+	std::string upload_dir;
+};
 
 class Server {
 	public:
@@ -57,14 +71,14 @@ class Server {
 		void extract_location(std::vector<std::string>& tokens, std::ifstream& file);
 
 
-		void location_root(std::vector<std::string> tokens);
-		void location_methods(std::vector<std::string> tokens);
-		void location_return(std::vector<std::string> tokens);
-		void location_cgi(std::vector<std::string> tokens);
-		void location_autoindex(std::vector<std::string> tokens);
-		void location_max_size(std::vector<std::string> tokens);
-		void location_index(std::vector<std::string> tokens);
-		void location_upload_dir(std::vector<std::string> tokens);
+		void location_root(std::vector<std::string> tokens, LocationConfig& loc);
+		void location_methods(std::vector<std::string> tokens, LocationConfig& loc);
+		void location_return(std::vector<std::string> tokens, LocationConfig& loc);
+		void location_cgi(std::vector<std::string> tokens, LocationConfig& loc);
+		void location_autoindex(std::vector<std::string> tokens, LocationConfig& loc);
+		void location_max_size(std::vector<std::string> tokens, LocationConfig& loc);
+		void location_index(std::vector<std::string> tokens, LocationConfig& loc);
+		void location_upload_dir(std::vector<std::string> tokens, LocationConfig& loc);
 		void display_Serv();
 
 		void init();
@@ -75,16 +89,11 @@ class Server {
 		std::string _host;
 		int	_port;
 		std::vector<std::string> _server_name;
-		std::map<int, std::string> _error_pages;
 		size_t _max_body_size;
-		std::string _path;
-		std::string _index;
 		std::string _root;
-		bool _autoIndex;
-		std::vector<std::string> _allowedMethods;
-		std::vector<std::string> _cgiExtensions;
-		std::string _returnPath;
-		std::string _upload_dir;
+		std::string _index;
+		std::map<int, std::string> _error_pages;
+		std::vector<LocationConfig> find_element_route;
 
 		int _fd;
 		struct sockaddr_in* _address;

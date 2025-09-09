@@ -6,7 +6,7 @@
 #    By: gebz <gebz@student.42.fr>                  +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/08/14 15:47:01 by lde-merc          #+#    #+#              #
-#    Updated: 2025/08/25 16:36:17 by gebz             ###   ########.fr        #
+#    Updated: 2025/09/09 09:47:23 by gebz             ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -27,9 +27,6 @@ INVALID_FILE = empty_file.conf not_good_name.con
 # Liste des fichiers source
 SRC_FILES = main.cpp\
 			Utils.cpp\
-			parsing/Config.cpp\
-			parsing/File.cpp\
-			parsing/LocationConfig.cpp\
 			exec/Server.cpp\
 			exec/Client.cpp\
 			exec/Request.cpp
