@@ -6,7 +6,7 @@
 #    By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/08/14 15:47:01 by lde-merc          #+#    #+#              #
-#    Updated: 2025/09/09 10:47:17 by lde-merc         ###   ########.fr        #
+#    Updated: 2025/09/09 13:52:13 by lde-merc         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -23,7 +23,7 @@ OBJ_DIR = objs/
 SRC_DIR = srcs/
 DEP		:= $(OBJ:.o=.d)
 
-INVALID_FILE = empty_file.conf
+INVALID_FILE = empty_file.conf wrong_extension.txt
 
 # Liste des fichiers source
 SRC_FILES = main.cpp Server.cpp Request.cpp Reponse.cpp Utils.cpp
