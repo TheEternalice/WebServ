@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/14 15:47:19 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/09/05 10:39:56 by lde-merc         ###   ########.fr       */
+/*   Updated: 2025/09/09 10:53:43 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,14 +25,30 @@
 #include <sys/stat.h>
 #include <cerrno>
 #include <fcntl.h>
+
 #include "Request.hpp"
 #include "Reponse.hpp"
+#include "Utils.hpp"
 
 struct ServerSocket {
 	int fd;
 	struct sockaddr_in address;
 	socklen_t _addrlen;
 	int _port;
+	// int	_port;
+	std::string _host;
+	std::string _server_name;
+	std::map<int, std::string> _error_pages;
+	size_t _max_body_size;
+	std::string _path;
+	std::string _index;
+	std::string _root;
+	bool _autoIndex;
+	std::string _returnPath;
+	std::string _upload_dir;
+
+	std::vector<std::string> _allowedMethods;
+	std::vector<std::string> _cgiExtensions;
 };
 
 class Server {
@@ -43,6 +59,49 @@ class Server {
 		
 		Server &operator=(const Server &other);
 
+		/******************
+		 * Exception
+		 ******************/
+		class Badextention: public std::exception {
+			public:
+				virtual const char* what() const throw();
+		};
+		class CannotBeOpen: public std::exception {
+			public:
+				virtual const char* what() const throw();
+		};
+
+		/******************
+		 * Parsing methods
+		 ******************/
+
+		bool parsing(std::string name);
+		bool check_extention(std::string name);
+		void lexer_cpp(std::vector<std::string>& tokens, std::ifstream& file);
+		void parsing_serv(std::ifstream& file);
+
+		void extract_listen(std::vector<std::string>& tokens, std::ifstream& file);
+		void extract_serverName(std::vector<std::string>& tokens, std::ifstream& file);
+		void extract_maxBodySyze(std::vector<std::string>& tokens, std::ifstream& file);
+		void extract_root(std::vector<std::string>& tokens, std::ifstream& file);
+		void extract_index(std::vector<std::string>& tokens, std::ifstream& file);
+		void extract_errorPage(std::vector<std::string>& tokens, std::ifstream& file);
+		void extract_location(std::vector<std::string>& tokens, std::ifstream& file);
+
+
+		void location_root(std::vector<std::string> tokens);
+		void location_methods(std::vector<std::string> tokens);
+		void location_return(std::vector<std::string> tokens);
+		void location_cgi(std::vector<std::string> tokens);
+		void location_autoindex(std::vector<std::string> tokens);
+		void location_max_size(std::vector<std::string> tokens);
+		void location_index(std::vector<std::string> tokens);
+		void location_upload_dir(std::vector<std::string> tokens);
+		void display_Serv();
+		
+		/******************
+		 * Server methods
+		 ******************/
 		void init();
 		void run();
 		void accept_client(ServerSocket &s);
@@ -51,11 +110,24 @@ class Server {
 		static std::string get_content_type(const std::string& path);
 		
 	private:
-		// std::vector<int> _port;
 		std::vector<struct pollfd> _fds;
-		std::vector<ServerSocket> sockets;
+		std::vector<ServerSocket> _sockets;
 		static std::map<int, Reponse> _static_responses; //Global answers : 404, 405, 500
-		std::vector<std::string> _allowedMethods;
-		std::vector<std::string> _cgiExtensions;
+		// std::vector<std::string> _allowedMethods;
+		// std::vector<std::string> _cgiExtensions;
 		static std::map<std::string, std::string> _extensionsToType;
+
+
+		// std::vector<Server> _serv;
+		// std::string _host;
+		// int	_port;
+		// std::vector<std::string> _server_name;
+		// std::map<int, std::string> _error_pages;
+		// size_t _max_body_size;
+		// std::string _path;
+		// std::string _index;
+		// std::string _root;
+		// bool _autoIndex;
+		// std::string _returnPath;
+		// std::string _upload_dir;
 };

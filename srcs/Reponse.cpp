@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 12:32:35 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/09/04 17:23:18 by lde-merc         ###   ########.fr       */
+/*   Updated: 2025/09/09 10:47:33 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,7 @@
 Reponse::Reponse() {}
 
 Reponse::Reponse(std::string method, std::string url) {
+	(void)method;
 	std::string path = "." + url; // exemple : "/style.css" → "./style.css"
 	std::ifstream file(path.c_str(), std::ios::binary);
 

@@ -6,7 +6,7 @@
 #    By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/08/14 15:47:01 by lde-merc          #+#    #+#              #
-#    Updated: 2025/09/08 14:41:10 by lde-merc         ###   ########.fr        #
+#    Updated: 2025/09/09 10:47:17 by lde-merc         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -26,7 +26,7 @@ DEP		:= $(OBJ:.o=.d)
 INVALID_FILE = empty_file.conf
 
 # Liste des fichiers source
-SRC_FILES = main.cpp Server.cpp Client.cpp Request.cpp Reponse.cpp
+SRC_FILES = main.cpp Server.cpp Request.cpp Reponse.cpp Utils.cpp
 			
 # Transforme chaque fichier source en un fichier objet dans $(OBJ_DIR)
 OBJS = $(addprefix $(OBJ_DIR), $(SRC_FILES:.cpp=.o))
@@ -35,7 +35,7 @@ all: mkdir_obj $(NAME)
 
 # Compilation des fichiers .cpp en .o dans le dossier $(OBJ_DIR)
 $(OBJ_DIR)%.o: %.cpp
-	@$(CC) $(CFLAGS) -c $< -o $@
+	@$(CXX) $(CXXFLAGS) -c $< -o $@
 
 # Création du dossier objs/ et des sous-répertoires s'ils n'existent pas
 mkdir_obj:
@@ -44,7 +44,7 @@ mkdir_obj:
 # Compilation finale
 $(NAME): $(OBJS)
 	@echo "\033[34mCompilation $(NAME) en cours\033[0m"
-	@$(CXX) $(OBJS) $(FLAGS) -o $(NAME)
+	@$(CXX) $(OBJS) $(CXXFLAGS) -o $(NAME)
 	@echo "\033[0;32mSUCCESS !\033[0m \033[0;33m$(NAME)\033[0m"
 
 clean:

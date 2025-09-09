@@ -1,16 +1,11 @@
 {
-    "version": "2.0.0",
-    "tasks": [
-        {
-            "label": "build",
-            "type": "shell",
-            "command": "make",
-            "args": ["-j"],                // option pour paralléliser la compilation
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            },
-            "problemMatcher": ["$c++"]
-        }
-    ]
+	"version": "2.0.0",
+	"tasks": [
+		{
+		"label": "build",
+		"type": "shell",
+		"command": "make",
+		"group": { "kind": "build", "isDefault": true }
+		}
+	]
 }

@@ -1,0 +1,3 @@
+_extensionToType a remplir, exemple dans le constructeur par default de Server
+Sinon le server telecharge le fichier et n'affiche/execute rien
+
