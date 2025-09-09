@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Utils.cpp                                          :+:      :+:    :+:   */
+/*   Utils.hpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/25 01:14:48 by gebz              #+#    #+#             */
-/*   Updated: 2025/09/08 16:31:29 by lde-merc         ###   ########.fr       */
+/*   Updated: 2025/09/09 14:26:14 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,3 +16,4 @@
 
 std::string trim(const std::string& str);
 std::vector<std::string> cpp_split(const std::string& line, char c);
+int to_int(const std::string& s);

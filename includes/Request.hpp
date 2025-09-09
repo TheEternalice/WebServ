@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/14 16:26:29 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/09/05 15:54:18 by lde-merc         ###   ########.fr       */
+/*   Updated: 2025/09/09 14:21:11 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,7 @@
 #include <unistd.h>
 #include <sys/wait.h>
 #include <fcntl.h>
+#include <algorithm>
 
 
 #include "Reponse.hpp"
@@ -32,11 +33,14 @@ class Request {
 		
 		Request &operator=(const Request &other);
 
-		static Request parse(const std::string &buffer);
-
 		std::string get_method() const;
 		std::string get_url() const;
 		std::string get_body() const;
+		std::string getHeader(const std::string& buffer) const;
+
+		bool hasHeader(const std::string& buffer) const;
+		void parse(const std::string& buffer);
+		std::string parseChunked(const std::string& buffer);
 
 		Reponse handle_get();
 		Reponse execute_cgi_get(std::string& path);

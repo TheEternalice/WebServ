@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/25 01:13:21 by gebz              #+#    #+#             */
-/*   Updated: 2025/09/09 11:35:03 by lde-merc         ###   ########.fr       */
+/*   Updated: 2025/09/09 14:25:52 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,4 +41,12 @@ std::vector<std::string> cpp_split(const std::string& line, char c) {
 		i++;
 	}
 	return sentence;
+}
+
+
+int to_int(const std::string &s) {
+    std::istringstream iss(s);
+    int value = 0;
+    iss >> value;
+    return value;
 }

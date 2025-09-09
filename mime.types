@@ -1,0 +1,10 @@
+# type MIME					extension associated
+text/plain                  txt text
+text/html                   html htm
+text/css                    css
+application/javascript      js
+image/jpeg                  jpeg jpg
+image/png                   png
+image/gif                   gif
+application/json            json
+application/xml             xml

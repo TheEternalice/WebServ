@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/14 15:54:02 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/09/09 13:30:18 by lde-merc         ###   ########.fr       */
+/*   Updated: 2025/09/09 14:28:58 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,7 @@ int main(int argc, char *argv[]) {
 		
 		if (serv.parsing(file_name)) {
 			std::cout << "Configuration file parsed successfully!" << std::endl;
-			serv.display_Serv();
+			// serv.display_Serv();
 		} else {
 			std::cerr << "Failed to parse configuration file" << std::endl;
 			return -1;

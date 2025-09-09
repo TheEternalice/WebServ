@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/14 16:26:26 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/09/09 13:36:03 by lde-merc         ###   ########.fr       */
+/*   Updated: 2025/09/09 14:27:54 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,37 +18,37 @@ extern char **environ;
 // Constructeur
 Request::Request() {}
 
-Request::Request(const std::string &request) {
+Request::Request(const std::string &request) { parse(request);}
 	// Simple parsing, assumes well-formed request
-	size_t method_end = request.find(' ');
-	if (method_end == std::string::npos) return;
-	_method = request.substr(0, method_end);
+	// size_t method_end = request.find(' ');
+	// if (method_end == std::string::npos) return;
+	// _method = request.substr(0, method_end);
 
-	size_t url_end = request.find(' ', method_end + 1);
-	if (url_end == std::string::npos) return;
-	_url = request.substr(method_end + 1, url_end - method_end - 1);
+	// size_t url_end = request.find(' ', method_end + 1);
+	// if (url_end == std::string::npos) return;
+	// _url = request.substr(method_end + 1, url_end - method_end - 1);
 
-	size_t version_end = request.find("\r\n", url_end + 1);
-	if (version_end == std::string::npos) return;
-	_http_version = request.substr(url_end + 1, version_end - url_end - 1);
+	// size_t version_end = request.find("\r\n", url_end + 1);
+	// if (version_end == std::string::npos) return;
+	// _http_version = request.substr(url_end + 1, version_end - url_end - 1);
 
-	size_t headers_end = request.find("\r\n\r\n");
-    if (headers_end != std::string::npos) {
-        _body = request.substr(headers_end + 4); // everything after headers
+	// size_t headers_end = request.find("\r\n\r\n");
+    // if (headers_end != std::string::npos) {
+    //     _body = request.substr(headers_end + 4); // everything after headers
 
-        // Optional: enforce Content-Length
-        size_t cl_pos = request.find("Content-Length:");
-        if (cl_pos != std::string::npos) {
-            size_t cl_end = request.find("\r\n", cl_pos);
-            std::string cl_str = request.substr(cl_pos + 15, cl_end - cl_pos - 15);
-            int content_length = atoi(cl_str.c_str());
-            if ((size_t)content_length < _body.size())
-                _body = _body.substr(0, content_length);
-        }
-    } else {
-        _body = "";
-    }
-}
+    //     // Optional: enforce Content-Length
+    //     size_t cl_pos = request.find("Content-Length:");
+    //     if (cl_pos != std::string::npos) {
+    //         size_t cl_end = request.find("\r\n", cl_pos);
+    //         std::string cl_str = request.substr(cl_pos + 15, cl_end - cl_pos - 15);
+    //         int content_length = atoi(cl_str.c_str());
+    //         if ((size_t)content_length < _body.size())
+    //             _body = _body.substr(0, content_length);
+    //     }
+    // } else {
+    //     _body = "";
+    // }
+// }
 
 Request::~Request() {}
 
@@ -73,6 +73,64 @@ std::string Request::get_url() const {
 std::string Request::get_body() const {
 	return _body;
 }
+
+void Request::parse(const std::string &buffer) {
+	size_t	pos = buffer.rfind("\r\n\r\n");
+	if (pos == std::string::npos) {
+		throw (std::runtime_error("Invalid HTTP request"));
+	}
+	std::string header = buffer.substr(0, pos);
+	std::string body = buffer.substr(pos + 4);
+	std::istringstream stream(header);
+	std::string line;
+	if (!std::getline(stream, line))
+		throw (std::runtime_error("Empty HTTP request"));
+	if (line[line.size() - 1] == '\r') line.resize(line.size() - 1);
+	std::istringstream first_line(line);
+	first_line >> _method >> _url >> _http_version;
+	while (std::getline(stream, line)) {
+		if (line[line.size() - 1] == '\r') line.resize(line.size() - 1);
+		if (line.empty()) break;
+		size_t colon = line.find(":");
+		if (colon == std::string::npos) continue;
+		std::string key = line.substr(0, colon);
+		std::string value = line.substr(colon + 1);
+		_headers[key] = value;
+	}
+	if (hasHeader("Content-Length")) {
+		int len = to_int(getHeader("Content-Length"));
+		_body = body.substr(0, len);
+	}
+	else if (hasHeader("Transfer-Encoding") && getHeader("Transfer-Encoding") == "chunked") {_body = parseChunked(body);}
+	else {_body = body;}
+}
+
+bool Request::hasHeader(const std::string &buffer) const {return (_headers.find(buffer) != _headers.end());}
+
+std::string Request::getHeader(const std::string &buffer) const {
+	std::map<std::string, std::string>::const_iterator it = _headers.find(buffer);
+	if (it != _headers.end())
+		return (it->second);
+	return ("");
+}
+
+std::string Request::parseChunked(const std::string &buffer) {
+	std::string body;
+	size_t pos = 0;
+	
+	while (true) {
+		size_t endl = buffer.find("\r\n", pos);
+		if (endl == std::string::npos) break;
+		std::string str_sub = buffer.substr(pos, endl - pos);
+		int chunk_size = to_int(str_sub);
+		if (chunk_size == 0) break;
+		pos = endl + 2;
+		body += buffer.substr(pos, chunk_size);
+		pos += chunk_size + 2;
+	}
+	return (body);
+}
+
 
 // Handle GET request
 /**********************************************

@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/14 15:47:19 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/09/09 10:53:43 by lde-merc         ###   ########.fr       */
+/*   Updated: 2025/09/09 14:29:09 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,7 @@
 #include <sys/stat.h>
 #include <cerrno>
 #include <fcntl.h>
+#include <stdexcept>
 
 #include "Request.hpp"
 #include "Reponse.hpp"
@@ -35,7 +36,6 @@ struct ServerSocket {
 	struct sockaddr_in address;
 	socklen_t _addrlen;
 	int _port;
-	// int	_port;
 	std::string _host;
 	std::string _server_name;
 	std::map<int, std::string> _error_pages;
