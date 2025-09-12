@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/14 16:26:26 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/09/09 14:27:54 by lde-merc         ###   ########.fr       */
+/*   Updated: 2025/09/12 15:09:49 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -412,15 +412,47 @@ Reponse Request::execute_cgi_post(std::string& url, std::string& body) {
  * Interprete la request
 	 Existence et droit de supprimer par le client avec unlink()
 	* Retourne 200 si ok
-	* Retourne 404 si le fichier n'existe pas
 	* Retourne 403 si c'est un repertoire
 	* Retourne 500 si erreur serveur
 *******************************************************/
 Reponse Request::handle_delete() {
-	
-	
-	Reponse r;
-	
 	std::cout << "Handling DELETE for " << _url << std::endl;
+	
+	std::string path = "." + _url;
+	
+	// Check si le fichier est ecrivable
+	if (access(path.c_str(), W_OK) != 0) {
+		Reponse r;
+		r.set_status_code(403); // Pas le droit d'ecriture
+		r.set_status_text("No Write Permission");
+		r.set_body("403 No Write Permission");
+		r.set_header("Content-Type", "text/plain");
+		std::ostringstream oss_len;
+		oss_len << r.get_body().size();
+		r.set_header("Content-Length", oss_len.str());
+		return r;
+	}
+	
+	// Supprime le fichier
+	if (unlink(path.c_str()) != 0) {
+		Reponse r;
+		r.set_status_code(500);
+		r.set_status_text("Internal Server Error");
+		r.set_body("500 Internal Server Error");
+		r.set_header("Content-Type", "text/plain");
+		std::ostringstream oss_len;
+		oss_len << r.get_body().size();
+		r.set_header("Content-Length", oss_len.str());
+		return r;
+	}
+
+	Reponse r;
+	r.set_status_code(200);
+	r.set_status_text("OK");
+	r.set_body("File deleted successfully\n");
+	r.set_header("Content-Type", "text/plain");
+	std::ostringstream oss;
+	oss << r.get_body().size();
+	r.set_header("Content-Length", oss.str());
 	return r;
 }
