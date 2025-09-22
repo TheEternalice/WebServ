@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/14 16:26:26 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/09/12 15:09:49 by lde-merc         ###   ########.fr       */
+/*   Updated: 2025/09/22 13:53:05 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,6 +74,10 @@ std::string Request::get_body() const {
 	return _body;
 }
 
+std::map<std::string, std::string> Request::getCookies() const { 
+	return _request_cookies;
+}
+
 void Request::parse(const std::string &buffer) {
 	size_t	pos = buffer.rfind("\r\n\r\n");
 	if (pos == std::string::npos) {
@@ -97,6 +101,7 @@ void Request::parse(const std::string &buffer) {
 		std::string value = line.substr(colon + 1);
 		_headers[key] = value;
 	}
+	parseCookies();
 	if (hasHeader("Content-Length")) {
 		int len = to_int(getHeader("Content-Length"));
 		_body = body.substr(0, len);
@@ -106,6 +111,14 @@ void Request::parse(const std::string &buffer) {
 }
 
 bool Request::hasHeader(const std::string &buffer) const {return (_headers.find(buffer) != _headers.end());}
+
+std::string Request::getCookie(const std::string& name) const {
+	std::map<std::string, std::string>::const_iterator it = _request_cookies.find(name);
+	if (it != _request_cookies.end()) {
+	    return it->second;
+	}
+	return ("");
+}
 
 std::string Request::getHeader(const std::string &buffer) const {
 	std::map<std::string, std::string>::const_iterator it = _headers.find(buffer);
@@ -131,6 +144,23 @@ std::string Request::parseChunked(const std::string &buffer) {
 	return (body);
 }
 
+void Request::parseCookies() {
+	std::string cookies_header = getHeader("Cookie");
+	if (cookies_header.empty())
+		return ;
+	
+	std::vector<std::string> cookie_pair = cpp_split(cookies_header, ';');
+	for (size_t i = 0; i < cookie_pair.size(); ++i) {
+		std::string pair = trim(cookie_pair[i]);
+		size_t pos_equal = pair.find('=');
+		
+		if (pos_equal != std::string::npos) {
+			std::string name = trim(pair.substr(0, pos_equal));
+			std::string value = trim(pair.substr(pos_equal + 1));
+			_request_cookies[name] = value;
+		}
+	}
+}
 
 // Handle GET request
 /**********************************************
@@ -142,6 +172,7 @@ Reponse Request::handle_get() {
 	Reponse r = execute_cgi_get(_url);
 
 	if (r.get_status_code() == -1) r = Reponse(_method, _url);
+	
 	return r;
 }
 
@@ -158,8 +189,8 @@ Reponse Request::execute_cgi_get(std::string& url) {
 	// Execute le script CGI
 	int pipe_fd[2];
 	pipe(pipe_fd);
-	Reponse r;
 	pid_t pid = fork();
+	Reponse r;
 	if (pid < 0) {
 		r = Reponse::make_500();
 		return r;
@@ -212,7 +243,6 @@ Reponse Request::execute_cgi_get(std::string& url) {
 		}
 
 		// --- construction de la réponse HTTP ---
-		Reponse r;
 		r.set_status_code(200);
 		r.set_status_text("OK");
 		r.set_body(content);

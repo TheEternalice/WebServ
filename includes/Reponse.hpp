@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 12:32:28 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/09/04 17:23:25 by lde-merc         ###   ########.fr       */
+/*   Updated: 2025/09/22 11:19:01 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,6 +36,7 @@ class Reponse {
 
 		int get_status_code() const;
 		std::string get_body() const;
+		std::map<std::string, std::string> get_header() const;
 		
 		void set_status_code(int code);
 		void set_status_text(const std::string& text);

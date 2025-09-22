@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/14 15:47:12 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/09/09 13:41:16 by lde-merc         ###   ########.fr       */
+/*   Updated: 2025/09/22 13:53:38 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,35 +18,46 @@ std::map<std::string, std::string> Server::_extensionsToType;
 
 // Constructeur
 Server::Server() {
-	// for (int i = 0; i < 4; i++) {
-	// 	ServerSocket s;
-	// 	s._port = 8080 + i;
-	// 	sockets.push_back(s);
-	// }
-	// _static_responses[404] = Reponse::make_404();
-	// _static_responses[405] = Reponse::make_405();
-	// _static_responses[500] = Reponse::make_500();
-	// _allowedMethods.push_back("GET");
-	// _allowedMethods.push_back("POST");
-	// _allowedMethods.push_back("DELETE");
-	// _extensionsToType[".html"] = "text/html";
-	// _extensionsToType[".css"]  = "text/css";
-	// _extensionsToType[".js"]   = "application/javascript";
-	// _extensionsToType[".jpg"]  = "image/jpeg";
-	// _extensionsToType[".png"]  = "image/png";
+	std::ifstream file("mime.types");
+	if (!file.is_open()) throw std::runtime_error("Could not open mime.types");
+
+	std::string line;
+	while (std::getline(file, line)) {
+		// Ignore comments et lignes vides
+		if (line.empty() || line[0] == '#')
+			continue;
+
+		std::istringstream iss(line);
+		std::string mime_type;
+		if (!(iss >> mime_type))
+			continue;
+
+		std::string ext;
+		while (iss >> ext) {
+			if (ext[0] != '.')
+				ext = "." + ext; // normaliser avec un point
+			_extensionsToType[ext] = mime_type;
+		}
+	}
+	file.close();
+
 }
 
 Server::~Server() {}
 
 Server::Server(const Server &other) {
-    *this = other;
+	*this = other;
 }
 
 Server &Server::operator=(const Server &other) {
-    if (this != &other) {
-        // copy attributes here
-    }
-    return *this;
+	if (this != &other) {
+		// copy attributes here
+		_fds = other._fds;
+		_sockets = other._sockets;
+		_static_responses = other._static_responses;
+		_extensionsToType = other._extensionsToType;
+	}
+	return *this;
 }
 
 bool Server::check_extention(std::string name){
@@ -413,7 +424,7 @@ std::string Server::get_content_type(const std::string& path) {
 
 	std::string ext = path.substr(dot);
 	std::map<std::string, std::string>::const_iterator it =_extensionsToType.find(ext);
-
+	
 	if (it != _extensionsToType.end())
 		return it->second;
 	else
@@ -541,7 +552,6 @@ void Server::handle_request(int i) {
 			return;
 	} else {
 		buffer[bytes_read] = '\0';
-		std::cout << "Received request\n";
 		// std::cout << "Received request:\n" << buffer << std::endl;
 		Request req = Request(buffer);
 		// std::cout << "body = " << req.get_body() << std::endl;

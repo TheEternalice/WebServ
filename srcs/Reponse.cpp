@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 12:32:35 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/09/09 14:07:16 by lde-merc         ###   ########.fr       */
+/*   Updated: 2025/09/22 12:52:29 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,6 +57,10 @@ Reponse &Reponse::operator=(const Reponse &other) {
 		this->_body = other._body;
     }
     return *this;
+}
+
+std::map<std::string, std::string> Reponse::get_header() const {
+	return _headers;
 }
 
 std::string Reponse::to_string() const {

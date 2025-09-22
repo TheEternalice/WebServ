@@ -1,5 +1,1 @@
-_extensionToType a remplir, exemple dans le constructeur par default de Server
-Sinon le server telecharge le fichier et n'affiche/execute rien
-
-_ Specifier les autorisation de chaque methode (location), a recuperer sur la branche de Gab
 _ Modifier les methodes make_200/404/405/500 dans la classe Reponse
