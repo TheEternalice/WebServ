@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/14 15:47:19 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/09/22 12:55:30 by lde-merc         ###   ########.fr       */
+/*   Updated: 2025/09/23 16:55:25 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,7 +75,7 @@ class Server {
 		 * Parsing methods
 		 ******************/
 
-		bool parsing(std::string name);
+		void parsing(std::string name);
 		bool check_extention(std::string name);
 		void lexer_cpp(std::vector<std::string>& tokens, std::ifstream& file);
 		void parsing_serv(std::ifstream& file);
@@ -107,27 +107,12 @@ class Server {
 		void accept_client(ServerSocket &s);
 		void handle_request(int i);
 		bool is_method_allowed(const std::string &method);
-		static std::string get_content_type(const std::string& path);
 		
+		static std::string get_content_type(const std::string& path);
+		std::vector<ServerSocket> get_Socket();
 	private:
 		std::vector<struct pollfd> _fds;
 		std::vector<ServerSocket> _sockets;
-		static std::map<int, Reponse> _static_responses; //Global answers : 404, 405, 500
-		// std::vector<std::string> _allowedMethods;
-		// std::vector<std::string> _cgiExtensions;
+		static std::map<int, Reponse> _static_responses;
 		static std::map<std::string, std::string> _extensionsToType;
-
-
-		// std::vector<Server> _serv;
-		// std::string _host;
-		// int	_port;
-		// std::vector<std::string> _server_name;
-		// std::map<int, std::string> _error_pages;
-		// size_t _max_body_size;
-		// std::string _path;
-		// std::string _index;
-		// std::string _root;
-		// bool _autoIndex;
-		// std::string _returnPath;
-		// std::string _upload_dir;
 };

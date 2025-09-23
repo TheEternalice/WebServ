@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/14 16:26:26 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/09/22 13:53:05 by lde-merc         ###   ########.fr       */
+/*   Updated: 2025/09/23 16:07:22 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -169,11 +169,13 @@ void Request::parseCookies() {
  * Sinon retourne le fichier avec 200
  **********************************************/
 Reponse Request::handle_get() {
-	Reponse r = execute_cgi_get(_url);
+	try {
+		Reponse r = execute_cgi_get(_url);
+		return r;
+	} catch (...) { }
 
-	if (r.get_status_code() == -1) r = Reponse(_method, _url);
-	
-	return r;
+	Reponse r = Reponse(_method, _url);
+	return r;	
 }
 
 Reponse Request::execute_cgi_get(std::string& url) {
@@ -181,9 +183,7 @@ Reponse Request::execute_cgi_get(std::string& url) {
 	
 	// Check si le fichier est executable
 	if (access(path.c_str(), X_OK) != 0) {
-		Reponse r;
-		r.set_status_code(-1); // Pas un script cgi
-		return r;
+		throw std::runtime_error("");
 	}
 	
 	// Execute le script CGI

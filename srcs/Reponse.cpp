@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 12:32:35 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/09/22 12:52:29 by lde-merc         ###   ########.fr       */
+/*   Updated: 2025/09/23 14:29:32 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -91,6 +91,18 @@ Reponse Reponse::make_404() {
 	r._status_code = 404;
 	r._status_text = "Not Found";
 	r._body = "404 Not Found";
+
+	// std::map<int, std::string> errorPages = ;
+	
+	
+	// std::ifstream file();
+	// if (!file.is_open()){
+	// 	throw CannotBeOpen();
+	// }
+	
+
+
+	
 	r._headers["Content-Type"] = "text/plain";
 	r._headers["Content-Length"] = r.to_string();
 	return r;

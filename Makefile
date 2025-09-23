@@ -6,7 +6,7 @@
 #    By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/08/14 15:47:01 by lde-merc          #+#    #+#              #
-#    Updated: 2025/09/09 13:52:13 by lde-merc         ###   ########.fr        #
+#    Updated: 2025/09/23 16:09:23 by lde-merc         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -26,7 +26,7 @@ DEP		:= $(OBJ:.o=.d)
 INVALID_FILE = empty_file.conf wrong_extension.txt
 
 # Liste des fichiers source
-SRC_FILES = main.cpp Server.cpp Request.cpp Reponse.cpp Utils.cpp
+SRC_FILES = main.cpp Server.cpp Server_parsing.cpp Request.cpp Reponse.cpp Utils.cpp
 			
 # Transforme chaque fichier source en un fichier objet dans $(OBJ_DIR)
 OBJS = $(addprefix $(OBJ_DIR), $(SRC_FILES:.cpp=.o))
@@ -53,6 +53,7 @@ clean:
 
 fclean: clean
 	@rm -f $(NAME)
+	@rm cgi_test/get/test.sh
 	@echo "\033[0;35mDeleting everything !\033[0m"
 
 re: fclean all
