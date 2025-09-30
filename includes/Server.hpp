@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/14 15:47:19 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/09/30 10:50:24 by lde-merc         ###   ########.fr       */
+/*   Updated: 2025/09/30 16:37:19 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,7 +72,7 @@ class Server {
 				virtual const char* what() const throw();
 		};
 
-		/******************
+		/******************clientServer;
 		 * Parsing methods
 		 ******************/
 
@@ -111,9 +111,11 @@ class Server {
 		
 		static std::string get_content_type(const std::string& path);
 		std::vector<ServerSocket> get_Socket();
+		void copy_socket(std::vector<ServerSocket> other);
 	private:
 		std::vector<struct pollfd> _fds;
 		std::vector<ServerSocket> _sockets;
 		static std::map<int, Reponse> _static_responses;
 		static std::map<std::string, std::string> _extensionsToType;
+		std::map<int, ServerSocket*> _clientServer;
 };

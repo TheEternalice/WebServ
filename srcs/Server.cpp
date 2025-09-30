@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/14 15:47:12 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/09/30 13:17:40 by lde-merc         ###   ########.fr       */
+/*   Updated: 2025/09/30 16:41:13 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,6 +54,10 @@ Server &Server::operator=(const Server &other) {
 		_extensionsToType = other._extensionsToType;
 	}
 	return *this;
+}
+
+void Server::copy_socket(std::vector<ServerSocket> other) {
+	this->_sockets = other;
 }
 
 std::vector<ServerSocket> Server::get_Socket() { return _sockets; }
@@ -209,7 +213,7 @@ void Server::accept_client(ServerSocket& s) {
 		return;
 	}
 
-	std::cout << "Client connected on port " << s._port << std::endl;
+	_clientServer[client_fd] = &s;
 
 	struct pollfd pfc;
 	pfc.fd = client_fd;
@@ -256,23 +260,31 @@ void Server::handle_request(int i) {
 					res = req.handle_delete();
 					break;
 				} default:
-					res = _static_responses[405];
-					break;
+				// res = _clientServer[_fds[i].fd]->_autoResponse[405];
+				res = _static_responses[405];
+				break;
 			}
 			res.set_header("Connection", "keep-alive");
 			res.set_header("Keep-Alive", "timeout=20, max=100");
 			
 			std::string response = res.to_string();
 			send(_fds[i].fd, response.c_str(), response.size(), 0);
+		} else {
+			res = _clientServer[_fds[i].fd]->_autoResponse[404]; // Attention, c'est un 405
+			std::string response = res.to_string();
+			send(_fds[i].fd, response.c_str(), response.size(), 0);
 		}
+	// close(_fds[i].fd);
+	_clientServer.erase(_fds[i].fd);
 	}
-}
+}	
 
 bool Server::is_method_allowed(const std::string& method) {
 	for (size_t i = 0; i < _sockets[i]._allowedMethods.size(); i++) {
-		// std::cout << _sockets[i]._allowedMethods.size() << std::endl;
-		if (_sockets[i]._allowedMethods[i] == method)
-			return true;
+		for(size_t j = 0; j < _sockets[i]._allowedMethods.size(); j++){
+			if (_sockets[i]._allowedMethods[j] == method)
+				return true;
+		}
 	}
 	return false;
 }

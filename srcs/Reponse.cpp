@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 12:32:35 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/09/30 13:18:17 by lde-merc         ###   ########.fr       */
+/*   Updated: 2025/09/30 16:17:06 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,6 +75,8 @@ Reponse::Reponse(int num, std::string path) {
 	char c = 0;
 	while (bodyData.get(c)){ std::string s; s.push_back(c); _body += s; }
 	
+
+	if (_body.empty()) std::cout << "body empty in constructor" << std::endl;
 	_headers["Content-Type"] = "text/plain";	
 	_headers["Content-Length"] = this->to_string();
 }
@@ -158,7 +160,6 @@ Reponse Reponse::make_405() {
 Reponse Reponse::make_500() {
 	Reponse r;
 	r._status_code = 500;
-	;
 	r._body = "500 Internal Server Error";
 	r._headers["Content-Type"] = "text/plain";
 	r._headers["Content-Length"] = r.to_string();

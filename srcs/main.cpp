@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/14 15:54:02 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/09/30 13:08:31 by lde-merc         ###   ########.fr       */
+/*   Updated: 2025/09/30 16:40:16 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,21 +32,19 @@ int	main(int argc, char *argv[])
 		std::vector<ServerSocket> so = serv.get_Socket();
 		int n = so.size();
 		for (int i = 0; i < n; i++) {
-			// std::cout << "Socket numero " << i + 1 << " sur " << n << std::endl;
 			if (i < n - 1){
 				for (int j = i + 1; j < n; j++) {
 					if (so[i]._port == so[j]._port)
 						throw std::runtime_error("Multiple server with the same port");
 					}
 			}
-			// creer les reponses de base
 			for (std::map<int, std::string>::const_iterator it = so[i]._error_pages.begin();
 					it != so[i]._error_pages.end(); ++it) {
 				so[i]._autoResponse[it->first] = Reponse(it->first, so[i]._error_pages[it->first]);
-				// std::cout << it->first << "  " << so[i]._autoResponse[it->first].get_body() << std::endl;
 			}
 		}
 
+		serv.copy_socket(so);
 		serv.display_Serv();
 		serv.init();
 		serv.run();
