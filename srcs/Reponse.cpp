@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 12:32:35 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/09/23 14:29:32 by lde-merc         ###   ########.fr       */
+/*   Updated: 2025/09/30 13:18:17 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,6 +40,43 @@ Reponse::Reponse(std::string method, std::string url) {
 	std::ostringstream oss_len;
 	oss_len << _body.size();
 	_headers["Content-Length"] = oss_len.str();
+}
+
+Reponse::Reponse(int num, std::string path) {
+	_status_code = num;
+	
+	switch (_status_code) {
+		case 400:
+			_status_text = "Bad request";
+			break;
+		case 403:
+			_status_text = "Forbidden";
+			break;
+		case 404:
+			_status_text = "Not Found";
+			break;
+		case 405: 
+			_status_text = "Method Not Allowed";
+			break;
+		case 500:
+			_status_text = "Internal Server Error";
+			break;
+		case 503:
+			_status_text = "Service Unavailable";
+			break;
+		default:
+			break;
+	}
+	
+	_body = "";
+	std::ifstream bodyData(path.c_str());
+	if (!bodyData.is_open()) {throw std::runtime_error("Can't open bodyData file");}
+	
+	char c = 0;
+	while (bodyData.get(c)){ std::string s; s.push_back(c); _body += s; }
+	
+	_headers["Content-Type"] = "text/plain";	
+	_headers["Content-Length"] = this->to_string();
 }
 
 Reponse::~Reponse() {}
@@ -121,7 +158,7 @@ Reponse Reponse::make_405() {
 Reponse Reponse::make_500() {
 	Reponse r;
 	r._status_code = 500;
-	r._status_text = "Internal Server Error";
+	;
 	r._body = "500 Internal Server Error";
 	r._headers["Content-Type"] = "text/plain";
 	r._headers["Content-Length"] = r.to_string();

@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/14 15:47:12 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/09/23 16:58:25 by lde-merc         ###   ########.fr       */
+/*   Updated: 2025/09/30 13:17:40 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,7 +39,6 @@ Server::Server() {
 		}
 	}
 	file.close();
-
 }
 
 Server::~Server() {}
@@ -271,6 +270,7 @@ void Server::handle_request(int i) {
 
 bool Server::is_method_allowed(const std::string& method) {
 	for (size_t i = 0; i < _sockets[i]._allowedMethods.size(); i++) {
+		// std::cout << _sockets[i]._allowedMethods.size() << std::endl;
 		if (_sockets[i]._allowedMethods[i] == method)
 			return true;
 	}

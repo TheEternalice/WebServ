@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/14 15:47:19 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/09/23 16:55:25 by lde-merc         ###   ########.fr       */
+/*   Updated: 2025/09/30 10:50:24 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,6 +49,7 @@ struct ServerSocket {
 
 	std::vector<std::string> _allowedMethods;
 	std::vector<std::string> _cgiExtensions;
+	std::map<int, Reponse> _autoResponse;
 };
 
 class Server {

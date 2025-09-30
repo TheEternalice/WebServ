@@ -6,7 +6,7 @@
 #    By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/08/14 15:47:01 by lde-merc          #+#    #+#              #
-#    Updated: 2025/09/23 16:09:23 by lde-merc         ###   ########.fr        #
+#    Updated: 2025/09/30 12:37:16 by lde-merc         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -53,7 +53,6 @@ clean:
 
 fclean: clean
 	@rm -f $(NAME)
-	@rm cgi_test/get/test.sh
 	@echo "\033[0;35mDeleting everything !\033[0m"
 
 re: fclean all

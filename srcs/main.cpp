@@ -6,43 +6,53 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/14 15:54:02 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/09/23 16:54:09 by lde-merc         ###   ########.fr       */
+/*   Updated: 2025/09/30 13:08:31 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
+#include "../includes/Server.hpp"
 #include <iostream>
 #include <stdexcept>
-#include "../includes/Server.hpp"
 
 // static void print_error(std::string error)
 // {
 // 	std::cerr << error << std::endl;
 // }
 
-int main(int argc, char *argv[]) {
+int	main(int argc, char *argv[])
+{
 	std::string file_name;
 	try {
 		if (argc != 2)
 			throw std::out_of_range("Not good amount of argument");
 		file_name = argv[1];
 		Server serv;
-		
+
 		serv.parsing(file_name);
 		std::vector<ServerSocket> so = serv.get_Socket();
 		int n = so.size();
-		for (int i = 0; i < n - 1; i++) {
-			for(int j = i + 1; j < n; j++) {
-				if (so[i]._port == so[j]._port)
-					throw std::runtime_error("Multiple server with the same port");
+		for (int i = 0; i < n; i++) {
+			// std::cout << "Socket numero " << i + 1 << " sur " << n << std::endl;
+			if (i < n - 1){
+				for (int j = i + 1; j < n; j++) {
+					if (so[i]._port == so[j]._port)
+						throw std::runtime_error("Multiple server with the same port");
+					}
+			}
+			// creer les reponses de base
+			for (std::map<int, std::string>::const_iterator it = so[i]._error_pages.begin();
+					it != so[i]._error_pages.end(); ++it) {
+				so[i]._autoResponse[it->first] = Reponse(it->first, so[i]._error_pages[it->first]);
+				// std::cout << it->first << "  " << so[i]._autoResponse[it->first].get_body() << std::endl;
 			}
 		}
-		serv.display_Serv();
 
+		serv.display_Serv();
 		serv.init();
 		serv.run();
-	} catch (std::exception& e){
+	} catch (std::exception &e) {
 		std::cerr << "Error: " << e.what() << std::endl;
-		return 1;
+		return (1);
 	}
-	return 0;
+	return (0);
 }
