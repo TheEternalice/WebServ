@@ -1,29 +1,18 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main.cpp                                           :+:      :+:    :+:   */
+/*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/08/14 15:54:02 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/10/03 15:07:45 by lde-merc         ###   ########.fr       */
+/*   Created: 2025/10/03 16:06:59 by lde-merc          #+#    #+#             */
+/*   Updated: 2025/10/03 16:40:37 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../includes/HTTP_Server.hpp"
-#include <iostream>
+#include "../includes/Client.hpp"
 
-int	main(int argc, char *argv[])
-{
-	try {
-		if (argc != 2)
-			throw std::invalid_argument("Usage: ./webserv <config_file>");
-		HTTP_Server http_server(argv[1]);
-		http_server.initialize_sockets();
-		http_server.run();
-		
-	}catch (std::exception &e) {
-		std::cerr << "Error: " << e.what() << std::endl;
-	}
-	return (0);
-}
+Client::Client() { }
+Client::~Client() { }
+Client::Client(int fd, sockaddr_in& addr) : _fd(fd), _addr(addr) { }
+int Client::getFd() const { return _fd; }

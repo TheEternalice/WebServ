@@ -6,7 +6,7 @@
 		"type": "cppdbg",
 		"request": "launch",
 		"program": "${workspaceFolder}/webserv",
-		"args": ["conf_file/valid_file/maximal_valid.conf"],
+		"args": ["conf_file/valid_file/minimal_valid.conf"],
 		"stopAtEntry": false,
 		"cwd": "${workspaceFolder}",
 		"environment": [],

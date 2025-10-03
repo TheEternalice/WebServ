@@ -1,1 +1,0 @@
-_ Modifier les methodes make_200/404/405/500 dans la classe Reponse
