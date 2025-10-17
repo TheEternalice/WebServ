@@ -1,29 +1,19 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Client.cpp                                         :+:      :+:    :+:   */
+/*   Utils.hpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/08/14 15:47:06 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/08/14 15:47:07 by lde-merc         ###   ########.fr       */
+/*   Created: 2025/08/25 01:14:48 by gebz              #+#    #+#             */
+/*   Updated: 2025/09/09 14:26:14 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "Client.hpp"
+#pragma once
 
-// Constructeur
-Client::Client() {}
+#include <vector>
 
-Client::~Client() {}
-
-Client::Client(const Client &other) {
-    *this = other;
-}
-
-Client &Client::operator=(const Client &other) {
-    if (this != &other) {
-        // copy attributes here
-    }
-    return *this;
-}
+std::string trim(const std::string& str);
+std::vector<std::string> cpp_split(const std::string& line, char c);
+int to_int(const std::string& s);
