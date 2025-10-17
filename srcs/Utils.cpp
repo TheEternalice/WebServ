@@ -6,10 +6,14 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/25 01:13:21 by gebz              #+#    #+#             */
-/*   Updated: 2025/10/03 11:47:47 by lde-merc         ###   ########.fr       */
+/*   Updated: 2025/10/06 16:46:11 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <string>
-#include <vector>
-#include <sstream>
+#include <cstdlib>
+
+
+int to_int(const std::string& s) {
+	return std::atoi(s.c_str());
+}

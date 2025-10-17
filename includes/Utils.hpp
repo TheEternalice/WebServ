@@ -6,9 +6,12 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/25 01:14:48 by gebz              #+#    #+#             */
-/*   Updated: 2025/10/03 11:48:01 by lde-merc         ###   ########.fr       */
+/*   Updated: 2025/10/06 16:40:11 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
+#include <string>
+
+int to_int(const std::string &s);

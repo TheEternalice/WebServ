@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/14 15:47:12 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/10/03 16:50:46 by lde-merc         ###   ########.fr       */
+/*   Updated: 2025/10/06 16:41:53 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,42 +83,57 @@ Client* HTTP_Server::getClientByFd(int fd)
 	return NULL;
 }
 
-void HTTP_Server::run()
-{
-	int	fd;
+void HTTP_Server::run() {
+	while (true) {
+		int ret = poll(&_pollfds[0], _pollfds.size(), -1);
+		if (ret < 0) {
+			if (errno == EINTR) continue;
+			std::cerr << "Poll error: " << strerror(errno) << std::endl;
+			break;
+		}
 
-	for (size_t i = 0; i < _pollfds.size(); i++)
-	{
-		fd = _pollfds[i].fd;
-		if (_pollfds[i].revents & POLLIN)
-		{
-			if (_socketServer.count(fd))
-			{
+		for (size_t i = 0; i < _pollfds.size(); ++i) {
+			int fd = _pollfds[i].fd;
+
+			// Nouvelle connexion entrante
+			if (_socketServer.count(fd) && (_pollfds[i].revents & POLLIN)) {
 				accept_client(fd);
-			}
-			else if (_clientServer.count(fd))
-			{
-				Client* cl = _clientServer[fd];
-				if (_pollfds[i].revents & POLLIN) {
-				cl->readFromSocket();
-				if (cl->requestComplete()) {
-					cl->parseRequest();
-					std::string resp = handle_http(cl);
-					cl->setResponse(resp);
-					// activer POLLOUT si on a quelque chose à envoyer
-					_pollfds[i].events |= POLLOUT;
-				}
+				continue;
 			}
 
-			if (_pollfds[i].revents & POLLOUT) {
-				cl->writeToSocket();
-				if (cl->outputEmpty())
-					_pollfds[i].events &= ~POLLOUT;
-			}
+			// Client existant
+			if (_clientServer.count(fd)) {
+				Client* cl = _clientServer[fd];
+
+				// Lecture depuis le client
+				if (_pollfds[i].revents & POLLIN) {
+					cl->readFromSocket();
+					if (cl->requestComplete()) {
+						cl->parseRequest();
+						// std::string resp = handle_http(cl);
+						// cl->setResponse(resp);
+						_pollfds[i].events |= POLLOUT; // on active l'écriture
+					}
+				}
+
+				// Écriture vers le client
+				if (_pollfds[i].revents & POLLOUT) {
+					cl->writeToSocket();
+					if (cl->outputEmpty()) {
+						// On peut fermer la connexion
+						close(fd);
+						delete cl;
+						_clientServer.erase(fd);
+						_pollfds.erase(_pollfds.begin() + i);
+						i--; // ne pas sauter l'entrée suivante
+						continue;
+					}
+				}
 			}
 		}
 	}
 }
+
 
 void HTTP_Server::accept_client(int fd)
 {
@@ -152,5 +167,5 @@ void HTTP_Server::accept_client(int fd)
 	pfd.revents = 0;
 	_pollfds.push_back(pfd);
 
-	std::cout << "New client connected: FD=" << client_fd << std::endl;
+	std::cout << "New client connected: fd =" << client_fd << std::endl;
 }
