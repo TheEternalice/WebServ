@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/14 15:47:12 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/09/30 16:41:13 by lde-merc         ###   ########.fr       */
+/*   Updated: 2025/10/20 16:33:55 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -137,6 +137,7 @@ void Server::init() {
 		_sockets[i].fd = socket(AF_INET, SOCK_STREAM, 0);
 		if (_sockets[i].fd < 0)
 			throw std::runtime_error("Failed to create socket");
+		_socketsFd[_sockets[i].fd] = _sockets[i];
 		// Set the socket to non-blocking mode
 		// This allows the server to handle multiple clients without blocking
 		int flags = fcntl(_sockets[i].fd, F_GETFL, 0);
@@ -179,7 +180,7 @@ void Server::run() {
 	}
 	
 	while (true) {
-		int ret = poll(&_fds[0], _fds.size(), 100);
+		int ret = poll(_fds.data(), _fds.size(), 100);
 		if (ret < 0) {
 			if (errno == EINTR)  continue;
 			std::cerr << "Poll error" << std::endl;
@@ -187,104 +188,109 @@ void Server::run() {
 		}
 		if (ret == 0) continue;
 		
-		for(int i = 0; i < (int)_sockets.size(); i++){
-			if (_fds[i].revents & POLLIN)
-				accept_client(_sockets[i]);
-		}
-		for(size_t i = _sockets.size(); i < _fds.size(); i++) {
-			if (_fds[i].revents & POLLIN) {
-				handle_request(i);
-				i--; // on erase le client, donc on decremente l'index
+		for (size_t i = 0; i < _fds.size(); ++i) {
+			int fd = _fds[i].fd;
+			int re = _fds[i].revents;
+
+			if (re & POLLIN) {
+				// Si c’est un socket serveur, on accepte un client
+				// Sinon, c’est un client existant
+				if (isServerSocket(fd)) {
+					accept_client(fd);
+				} else {
+					Client* cl = _clientServer[fd];
+					cl->readFromSocket();
+					if (cl->tryParseRequest())
+						handle_request(*cl);
+				}
+			}
+			if (re & POLLOUT) {
+				if (_clientServer.count(fd)) {
+					Client *cl = _clientServer[fd];
+					cl->writeToSocket();
+					if (cl->outputEmpty())
+						_fds[i].events &= ~POLLOUT;
+				}
 			}
 		}
 	}
 }
 
-void Server::accept_client(ServerSocket& s) {
+bool Server::isServerSocket(int fd) {
+	for(size_t i = 0; i < _sockets.size(); i++)
+		if (fd == _sockets[i].fd) return true;
+	return false;
+}
+ 
+void Server::accept_client(int fd) {
 	struct sockaddr_in client_addr;
 	socklen_t client_len = sizeof(client_addr);
 
-	int client_fd = accept(s.fd, (struct sockaddr *)&client_addr, &client_len);
+	int client_fd = accept(fd, (struct sockaddr *)&client_addr, &client_len);
 	if (client_fd < 0) {
 		if (errno == EAGAIN || errno == EWOULDBLOCK)
-			return; // rien à accepter
-		std::cerr << "accept() failed on port " << s._port
-				<< ": " << strerror(errno) << std::endl;
+			return; // Rien à accepter
+		std::cerr << "accept() failed on fd " << fd << ": "
+		          << strerror(errno) << std::endl;
 		return;
 	}
 
-	_clientServer[client_fd] = &s;
+	// Rend le client non bloquant
+	int flags = fcntl(client_fd, F_GETFL, 0);
+	if (flags == -1 || fcntl(client_fd, F_SETFL, flags | O_NONBLOCK) == -1) {
+		std::cerr << "fcntl() failed: " << strerror(errno) << std::endl;
+		close(client_fd);
+		return;
+	}
 
-	struct pollfd pfc;
-	pfc.fd = client_fd;
-	pfc.events = POLLIN;
-	pfc.revents = 0;
-	_fds.push_back(pfc);
+	ServerSocket* server = NULL;
+	if (_socketsFd.count(fd))
+		server = &_socketsFd[fd];
+	else {
+		std::cerr << "Unknown server fd: " << fd << std::endl;
+		close(client_fd);
+		return;
+	}
+
+	_clientServer[client_fd] = server;
+	
+	// Ajouter à poll()
+	struct pollfd pfd;
+	pfd.fd = client_fd;
+	pfd.events = POLLIN;
+	pfd.revents = 0;
+	_fds.push_back(pfd);
+
+	std::cout << "New client connected on port " << server->_port
+	          << " (fd=" << client_fd << ")" << std::endl;
 }
 
-void Server::handle_request(int i) {
-	char buffer[1024];
-	memset(buffer, 0, sizeof(buffer));
-	int bytes_read = recv(_fds[i].fd, buffer, sizeof(buffer) - 1, 0);
-	if (bytes_read < 0) {
-		if (errno == EAGAIN || errno == EWOULDBLOCK) {
-			// Pas encore de données, ce n'est pas une erreur
-			return; // ou continue dans la boucle poll
-		} else {
-			// Erreur réelle
-			std::cerr << "Failed to read from client" << std::endl;
-			close(_fds[i].fd);
-			_fds.erase(_fds.begin() + i);
-			return;
-		}
-	} else if (bytes_read == 0) {
-			// Client a fermé la connexion
-			std::cout << "Client disconnected" << std::endl;
-			close(_fds[i].fd);
-			_fds.erase(_fds.begin() + i);
-			return;
-	} else {
-		buffer[bytes_read] = '\0';
-		Request req = Request(buffer);
-		Reponse res;
-		if (is_method_allowed(req.get_method())) {
-			// Handle the request
-			switch(req.get_method()[0]) {
-				case 'G': {
-					res = req.handle_get();
-					break;
-				} case 'P': {
-					res = req.handle_post();
-					break;
-				} case 'D': {
-					res = req.handle_delete();
-					break;
-				} default:
-				// res = _clientServer[_fds[i].fd]->_autoResponse[405];
-				res = _static_responses[405];
-				break;
-			}
-			res.set_header("Connection", "keep-alive");
-			res.set_header("Keep-Alive", "timeout=20, max=100");
-			
-			std::string response = res.to_string();
-			send(_fds[i].fd, response.c_str(), response.size(), 0);
-		} else {
-			res = _clientServer[_fds[i].fd]->_autoResponse[404]; // Attention, c'est un 405
-			std::string response = res.to_string();
-			send(_fds[i].fd, response.c_str(), response.size(), 0);
-		}
-	// close(_fds[i].fd);
-	_clientServer.erase(_fds[i].fd);
-	}
-}	
 
-bool Server::is_method_allowed(const std::string& method) {
-	for (size_t i = 0; i < _sockets[i]._allowedMethods.size(); i++) {
-		for(size_t j = 0; j < _sockets[i]._allowedMethods.size(); j++){
-			if (_sockets[i]._allowedMethods[j] == method)
-				return true;
-		}
+void Server::handle_request(Client& client) {
+	const std::string& method = client.getRequest().get_method();
+	Reponse res;
+
+	if (!is_method_allowed(method, client)) {
+		res = _static_responses[405];
+	} else if (method == "GET") {
+		res = client.getRequest().handle_get();
+	} else if (method == "POST") {
+		res = client.getRequest().handle_post();
+	} else if (method == "DELETE") {
+		res = client.getRequest().handle_delete();
+	} else {
+		res = _static_responses[400];
 	}
+
+	res.set_header("Connection", "keep-alive");
+	res.set_header("Keep-Alive", "timeout=20, max=100");
+	client.setResponse(res.to_string());
+}
+
+// C'est l'idee qui compte !
+bool Server::is_method_allowed(const std::string& method, int fd, std::string location) {
+	ServerSocket server = _socketsFd[fd];
+	int nummethode; // a recuperer
+	if (server._allowedMethods[location] & nummethode != 0) return true; 
 	return false;
 }

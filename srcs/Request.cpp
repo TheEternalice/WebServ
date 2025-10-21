@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/14 16:26:26 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/09/30 13:19:12 by lde-merc         ###   ########.fr       */
+/*   Updated: 2025/10/20 14:45:08 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -172,17 +172,17 @@ Reponse Request::handle_get() {
 	try {
 		Reponse r = execute_cgi_get(_url);
 		return r;
-	} catch (...) { }
-
-	Reponse r = Reponse(_method, _url);
-	return r;	
+	} catch (std::exception &e) {
+		Reponse r = Reponse(_method, _url);
+		return r;
+	}		
 }
 
 Reponse Request::execute_cgi_get(std::string& url) {
 	std::string path = "." + url;
 	
 	// Check si le fichier est executable
-	if (access(path.c_str(), X_OK) != 0) {
+	if (access(path.c_str(), X_OK) != 0 || url == "/") {
 		throw std::runtime_error("");
 	}
 	
@@ -241,6 +241,7 @@ Reponse Request::execute_cgi_get(std::string& url) {
 		} else {
 			content = body; // pas d’en-têtes CGI, tout est du body
 		}
+
 
 		// --- construction de la réponse HTTP ---
 		r.set_status_code(200);

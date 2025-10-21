@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/14 15:47:19 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/09/30 16:37:19 by lde-merc         ###   ########.fr       */
+/*   Updated: 2025/10/20 16:37:10 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,12 +30,12 @@
 #include "Request.hpp"
 #include "Reponse.hpp"
 #include "Utils.hpp"
+#include "Client.hpp"
 
 struct ServerSocket {
 	int fd;
-	struct sockaddr_in address;
-	socklen_t _addrlen;
 	int _port;
+	
 	std::string _host;
 	std::string _server_name;
 	std::map<int, std::string> _error_pages;
@@ -43,11 +43,15 @@ struct ServerSocket {
 	std::string _path;
 	std::string _index;
 	std::string _root;
-	bool _autoIndex;
 	std::string _returnPath;
 	std::string _upload_dir;
-
-	std::vector<std::string> _allowedMethods;
+	
+	bool _autoIndex;
+	
+	struct sockaddr_in address;
+	socklen_t _addrlen;
+	
+	std::map<std::string, int> _allowedMethods; // location et methodes en bit
 	std::vector<std::string> _cgiExtensions;
 	std::map<int, Reponse> _autoResponse;
 };
@@ -105,17 +109,23 @@ class Server {
 		 ******************/
 		void init();
 		void run();
-		void accept_client(ServerSocket &s);
-		void handle_request(int i);
-		bool is_method_allowed(const std::string &method);
+		// void accept_client(ServerSocket &s);
+		void accept_client(int fd);
+		// void handle_request(int i);
+		void handle_request(Client& client);
+		// bool is_method_allowed(const std::string &method);
+		bool is_method_allowed(const std::string &method, int fd, std::string url);
 		
 		static std::string get_content_type(const std::string& path);
 		std::vector<ServerSocket> get_Socket();
 		void copy_socket(std::vector<ServerSocket> other);
+		bool isServerSocket(int fd);
 	private:
+		static std::map<int, Reponse> _static_responses;
+	
 		std::vector<struct pollfd> _fds;
 		std::vector<ServerSocket> _sockets;
-		static std::map<int, Reponse> _static_responses;
 		static std::map<std::string, std::string> _extensionsToType;
-		std::map<int, ServerSocket*> _clientServer;
+		std::map<int, ServerSocket> _socketsFd;
+		std::map<int, Client*> _clientServer;
 };

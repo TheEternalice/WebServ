@@ -1,1 +1,12 @@
 _ Modifier les methodes make_200/404/405/500 dans la classe Reponse
+
+
+Les problemes actuels : 
+	_ Pas adapte pour une lecture non bloquante
+	_ Ne conserve pas l'etat du client entre 2 appels
+	_ Melange la logique reseau et HTTP
+
+Solution -> chaque client gere :
+	_ Lecture (accumuler les donnees reçues)
+	_ Parsing (dès qu’on a une requete complete)
+	_ Reponse / ecriture.

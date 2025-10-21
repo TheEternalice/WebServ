@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 12:32:35 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/09/30 16:17:06 by lde-merc         ###   ########.fr       */
+/*   Updated: 2025/10/20 12:23:59 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,13 @@ Reponse::Reponse() {}
 
 Reponse::Reponse(std::string method, std::string url) {
 	(void)method;
-	std::string path = "." + url; // exemple : "/style.css" → "./style.css"
+	std::string path;
+	
+	if (url == "/") {
+		path = "./page/acceuil.html";
+	} else {
+		path = "." + url; // exemple : "/style.css" → "./style.css"
+	}
 	std::ifstream file(path.c_str(), std::ios::binary);
 
 	if (!file) {
