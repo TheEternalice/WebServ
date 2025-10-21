@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server_parsing.cpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ade-rese <ade-rese@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/23 09:28:12 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/09/23 16:55:57 by lde-merc         ###   ########.fr       */
+/*   Updated: 2025/10/21 16:53:13 by ade-rese         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -196,7 +196,10 @@ void Server::location_methods(std::vector<std::string> tokens){
 		if (!method.empty() && method[method.length() - 1] == ';'){
 			method = method.substr(0, method.length() - 1);
 		}
-		_sockets.back()._allowedMethods.push_back(method);
+		if (_sockets.back()._allowedMethods[method] == 0)
+			_sockets.back()._allowedMethods[method] = 1;
+		_sockets.back()._allowedMethods[method] <<= 1;
+		_sockets.back()._allowedMethods[method] += 1;
 	}
 }
 

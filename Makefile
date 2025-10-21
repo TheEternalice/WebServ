@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+         #
+#    By: ade-rese <ade-rese@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/08/14 15:47:01 by lde-merc          #+#    #+#              #
-#    Updated: 2025/09/30 12:37:16 by lde-merc         ###   ########.fr        #
+#    Updated: 2025/10/21 16:53:30 by ade-rese         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -26,7 +26,7 @@ DEP		:= $(OBJ:.o=.d)
 INVALID_FILE = empty_file.conf wrong_extension.txt
 
 # Liste des fichiers source
-SRC_FILES = main.cpp Server.cpp Server_parsing.cpp Request.cpp Reponse.cpp Utils.cpp
+SRC_FILES = main.cpp Server.cpp Server_parsing.cpp Request.cpp Reponse.cpp Utils.cpp Client.cpp
 			
 # Transforme chaque fichier source en un fichier objet dans $(OBJ_DIR)
 OBJS = $(addprefix $(OBJ_DIR), $(SRC_FILES:.cpp=.o))

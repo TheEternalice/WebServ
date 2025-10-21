@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ade-rese <ade-rese@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/20 14:17:13 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/10/20 16:08:06 by lde-merc         ###   ########.fr       */
+/*   Updated: 2025/10/21 16:37:54 by ade-rese         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +29,7 @@ class Client {
 		bool outputEmpty();
 		
 		Request getRequest();
+		int get_fd();
 		void setResponse(std::string res);
 		
 	private:
@@ -36,4 +37,5 @@ class Client {
 		Request _request;
 		std::string _buffer_in;
 		std::string _buffer_out;
+		int	_fd;
 };

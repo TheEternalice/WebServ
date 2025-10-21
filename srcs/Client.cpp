@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ade-rese <ade-rese@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/20 14:17:07 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/10/20 16:13:36 by lde-merc         ###   ########.fr       */
+/*   Updated: 2025/10/21 16:42:42 by ade-rese         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -97,6 +97,10 @@ bool Client::outputEmpty() {
 
 Request Client::getRequest() {
 	return _request;
+}
+
+int	Client::get_fd() {
+	return (_fd);	
 }
 
 void Client::setResponse(std::string res) {

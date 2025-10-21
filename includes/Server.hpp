@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ade-rese <ade-rese@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/14 15:47:19 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/10/20 16:37:10 by lde-merc         ###   ########.fr       */
+/*   Updated: 2025/10/21 16:36:51 by ade-rese         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -114,7 +114,7 @@ class Server {
 		// void handle_request(int i);
 		void handle_request(Client& client);
 		// bool is_method_allowed(const std::string &method);
-		bool is_method_allowed(const std::string &method, int fd, std::string url);
+		bool is_method_allowed(const std::string &method, Client &client);
 		
 		static std::string get_content_type(const std::string& path);
 		std::vector<ServerSocket> get_Socket();
@@ -126,6 +126,6 @@ class Server {
 		std::vector<struct pollfd> _fds;
 		std::vector<ServerSocket> _sockets;
 		static std::map<std::string, std::string> _extensionsToType;
-		std::map<int, ServerSocket> _socketsFd;
-		std::map<int, Client*> _clientServer;
+		std::map<int, ServerSocket> _clientToSocket;
+		std::map<int, Client*> _socketToClient;
 };
