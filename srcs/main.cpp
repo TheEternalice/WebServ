@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/14 15:54:02 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/10/22 10:30:20 by lde-merc         ###   ########.fr       */
+/*   Updated: 2025/10/22 11:55:30 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,8 +38,8 @@ int	main(int argc, char *argv[])
 						throw std::runtime_error("Multiple server with the same port");
 					}
 			}
-			for (std::map<int, std::string>::const_iterator it = so[i]._error_pages.begin();
-					it != so[i]._error_pages.end(); ++it) {
+			std::map<int, std::string>::const_iterator it;
+			for (it = so[i]._error_pages.begin(); it != so[i]._error_pages.end(); ++it) {
 				so[i]._autoResponse[it->first] = Reponse(it->first, so[i]._error_pages[it->first]);
 			}
 		}

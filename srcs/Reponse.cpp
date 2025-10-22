@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 12:32:35 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/10/22 11:17:26 by lde-merc         ###   ########.fr       */
+/*   Updated: 2025/10/22 12:36:11 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,13 +27,8 @@ Reponse::Reponse(std::string url) {
 	std::ifstream file(path.c_str(), std::ios::binary);
 
 	if (!file || access(path.c_str(), F_OK) != 0) {
-		// Reponse res404 = make_404();
-		Reponse res404 = Reponse(404, "./Error_pages/404.html");
-		_status_code = res404._status_code;
-		_status_text = res404._status_text;
-		_body = res404._body;
-		_headers = res404._headers;
-		return ;
+		throw (std::runtime_error(""));
+		
 	} else {
 		std::ostringstream oss;
 		oss << file.rdbuf();
@@ -122,49 +117,49 @@ std::string Reponse::to_string() const {
 	return oss.str();
 }
 
-Reponse Reponse::make_200(const std::string& body, const std::string& type) {
-	Reponse r;
-	r._status_code = 200;
-	r._status_text = "OK";
-	r._body = body;
-	r._headers["Content-Type"] = type;
-	std::ostringstream oss;
-	oss << r._body.size();
-	r._headers["Content-Length"] = oss.str();
-	return r;
-}
+// Reponse Reponse::make_200(const std::string& body, const std::string& type) {
+// 	Reponse r;
+// 	r._status_code = 200;
+// 	r._status_text = "OK";
+// 	r._body = body;
+// 	r._headers["Content-Type"] = type;
+// 	std::ostringstream oss;
+// 	oss << r._body.size();
+// 	r._headers["Content-Length"] = oss.str();
+// 	return r;
+// }
 
-Reponse Reponse::make_404() {
-	 Reponse r;
-	r._status_code = 404;
-	r._status_text = "Not Found";
-	r._body = "404 Not Found";
+// Reponse Reponse::make_404() {
+// 	 Reponse r;
+// 	r._status_code = 404;
+// 	r._status_text = "Not Found";
+// 	r._body = "404 Not Found";
 
-	// std::map<int, std::string> errorPages = ;
+// 	// std::map<int, std::string> errorPages = ;
 	
 	
-	// std::ifstream file();
-	// if (!file.is_open()){
-	// 	throw CannotBeOpen();
-	// }
+// 	// std::ifstream file();
+// 	// if (!file.is_open()){
+// 	// 	throw CannotBeOpen();
+// 	// }
 	
 
 
 	
-	r._headers["Content-Type"] = "text/plain";
-	r._headers["Content-Length"] = r.to_string();
-	return r;
-}
+// 	r._headers["Content-Type"] = "text/plain";
+// 	r._headers["Content-Length"] = r.to_string();
+// 	return r;
+// }
 
-Reponse Reponse::make_405() {
-	Reponse r;
-	r._status_code = 405;
-	r._status_text = "Method Not Allowed";
-	r._body = "405 Method Not Allowed";
-	r._headers["Content-Type"] = "text/plain";
-	r._headers["Content-Length"] = r.to_string();
-	return r;
-}
+// Reponse Reponse::make_405() {
+// 	Reponse r;
+// 	r._status_code = 405;
+// 	r._status_text = "Method Not Allowed";
+// 	r._body = "405 Method Not Allowed";
+// 	r._headers["Content-Type"] = "text/plain";
+// 	r._headers["Content-Length"] = r.to_string();
+// 	return r;
+// }
 
 Reponse Reponse::make_500() {
 	Reponse r;

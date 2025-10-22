@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>CGI Launcher</title>
+<style>
+  :root{
+    --bg:#071022;
+    --card:#0b1220;
+    --accent:#3b82f6;
+    --muted:#9aa6b2;
+    --white:#eef2f7;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background: linear-gradient(180deg,#051026 0%, #071827 100%);
+    color:var(--white);
+    font-family: system-ui,-apple-system, "Segoe UI", Roboto, Arial;
+    padding:2rem;
+  }
+  .container{
+    width:100%;
+    max-width:1100px;
+    background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    border-radius:12px;
+    padding:1.5rem;
+    box-shadow: 0 10px 30px rgba(2,6,23,0.6);
+    border:1px solid rgba(255,255,255,0.03);
+  }
+  h1{ margin:0 0 .5rem 0; font-size:1.25rem; }
+  p.lead{ margin:0 0 1rem 0; color:var(--muted); }
+
+  .controls{
+    display:flex;
+    gap:.75rem;
+    flex-wrap:wrap;
+    margin-bottom:1rem;
+  }
+  button.btn{
+    background:transparent;
+    border:1px solid rgba(255,255,255,0.06);
+    padding:.6rem .9rem;
+    color:var(--white);
+    border-radius:8px;
+    cursor:pointer;
+    font-weight:600;
+    transition:transform .08s ease, box-shadow .08s;
+  }
+  button.btn:hover{ transform:translateY(-2px); }
+  button.primary{
+    background:linear-gradient(90deg,var(--accent),#60a5fa);
+    border:none;
+    color:white;
+  }
+
+  .viewer {
+    margin-top:1rem;
+    background: rgba(255,255,255,0.02);
+    border-radius:10px;
+    padding:0.5rem;
+    border:1px solid rgba(255,255,255,0.02);
+    min-height:300px;
+    display:flex;
+  }
+
+  iframe.output {
+    border:0;
+    width:100%;
+    height:100%;
+    border-radius:6px;
+    background:white;
+  }
+
+  @media (max-width:700px){
+    .controls{ flex-direction:column; }
+  }
+</style>
+</head>
+<body>
+  <div class="container">
+    <h1>Lanceur de CGI</h1>
+    <p class="lead">Clique sur un bouton pour exécuter le CGI correspondant. Le résultat s’affiche dans la zone ci-dessous.</p>
+
+    <div class="controls">
+      <form action="/cgi-bin/hello.cgi" method="get" target="cgiResult">
+        <button type="submit" class="btn primary">Script cpp</button>
+      </form>
+      <form action="/cgi-bin/hello.pl" method="get" target="cgiResult">
+        <button type="submit" class="btn">Script perl</button>
+      </form>
+      <form action="/cgi-bin/hello.sh" method="get" target="cgiResult">
+        <button type="submit" class="btn">Script bash 1</button>
+      </form>
+      <form action="/cgi-bin/hello2.sh" method="get" target="cgiResult">
+        <button type="submit" class="btn">Script bash 2</button>
+      </form>
+    </div>
+
+    <div class="viewer">
+      <iframe name="cgiResult" class="output" srcdoc="Appuie sur un bouton pour lancer un CGI."></iframe>
+    </div>
+  </div>
+</body>
+</html>

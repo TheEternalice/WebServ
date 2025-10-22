@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/14 16:26:26 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/10/22 10:49:00 by lde-merc         ###   ########.fr       */
+/*   Updated: 2025/10/22 12:56:08 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,6 +67,10 @@ void Request::parse(const std::string &buffer) {
 	if (line[line.size() - 1] == '\r') line.resize(line.size() - 1);
 	std::istringstream first_line(line);
 	first_line >> _method >> _url >> _http_version;
+	pos = _url.find('?');
+	if (pos != std::string::npos)
+		_url = _url.substr(0, pos);
+
 	while (std::getline(stream, line)) {
 		if (line[line.size() - 1] == '\r') line.resize(line.size() - 1);
 		if (line.empty()) break;
@@ -156,6 +160,7 @@ Reponse Request::handle_get() {
 Reponse Request::execute_cgi_get(std::string& url) {
 	std::string path = "." + url;
 	
+	std::cout << "url = " << url << std::endl;
 	// Check si le fichier est executable
 	if (access(path.c_str(), X_OK) != 0 || url == "/") {
 		throw std::runtime_error("");

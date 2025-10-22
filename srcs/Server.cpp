@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/14 15:47:12 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/10/22 11:04:23 by lde-merc         ###   ########.fr       */
+/*   Updated: 2025/10/22 11:58:24 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -281,16 +281,20 @@ void Server::handle_request(Client &client) {
 	const std::string method = client.getRequest().get_method();
 	Reponse res;
 	ServerSocket* server = &_clientToSocket[client.get_fd()];
-	if (!is_method_allowed(method, client)) {
-		res = server->_autoResponse[405];
-	} else if (method == "GET") {
-		res = client.getRequest().handle_get();
-	} else if (method == "POST") {
-		res = client.getRequest().handle_post();
-	}else if (method == "DELETE") {
-		res = client.getRequest().handle_delete();
-	} else {
-		res = server->_autoResponse[400];
+	try {
+		if (!is_method_allowed(method, client)) {
+			res = server->_autoResponse[405];
+		} else if (method == "GET") {
+			res = client.getRequest().handle_get();
+		} else if (method == "POST") {
+			res = client.getRequest().handle_post();
+		}else if (method == "DELETE") {
+			res = client.getRequest().handle_delete();
+		} else {
+			res = server->_autoResponse[400];
+		}
+	} catch (std::runtime_error &e) {
+		res = server->_autoResponse[404];
 	}
 
 	if (client.getRequest().getHeader("Connection") == "keep-alive") {
@@ -322,11 +326,11 @@ bool Server::is_method_allowed(const std::string &method, Client &client) {
 	}
 	std::string tmpLocation = client.getRequest().get_url();
 	size_t pos = 0;	
-	pos = tmpLocation.find('/');
-	if (pos + 1 < 15)
-		tmpLocation = tmpLocation.substr(0, pos + 1);
+	pos = tmpLocation.find_last_of('/');
+	if (pos != std::string::npos && pos > 0)
+		tmpLocation = tmpLocation.substr(0, pos);
 	else
-		tmpLocation = tmpLocation.substr(0, tmpLocation.length());
+		tmpLocation = "/";
 	if ((server->_allowedMethods[tmpLocation] & nummethode) != 0)
 		return true;
 	return false;
