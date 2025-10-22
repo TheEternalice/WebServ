@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ade-rese <ade-rese@student.42.fr>          +#+  +:+       +#+        */
+/*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/14 15:47:19 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/10/21 16:36:51 by ade-rese         ###   ########.fr       */
+/*   Updated: 2025/10/21 17:14:42 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,10 +19,7 @@
 #include <unistd.h>
 #include <poll.h>
 #include <vector>
-#include <sys/socket.h>
-#include <poll.h>
-#include <netinet/in.h>
-#include <sys/stat.h>
+
 #include <cerrno>
 #include <fcntl.h>
 #include <stdexcept>
@@ -123,9 +120,10 @@ class Server {
 	private:
 		static std::map<int, Reponse> _static_responses;
 	
-		std::vector<struct pollfd> _fds;
-		std::vector<ServerSocket> _sockets;
-		static std::map<std::string, std::string> _extensionsToType;
-		std::map<int, ServerSocket> _clientToSocket;
-		std::map<int, Client*> _socketToClient;
+		std::vector<struct pollfd> 					_fds;
+		std::vector<ServerSocket> 					_sockets;
+		static std::map<std::string, std::string> 	_extensionsToType;
+		std::map<int, ServerSocket> 				_listeningSockets;
+		std::map<int, ServerSocket> 				_clientToSocket;
+		std::map<int, Client*> 						_socketToClient;
 };

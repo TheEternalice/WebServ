@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ade-rese <ade-rese@student.42.fr>          +#+  +:+       +#+        */
+/*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/20 14:17:13 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/10/21 16:37:54 by ade-rese         ###   ########.fr       */
+/*   Updated: 2025/10/22 10:41:29 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,12 +14,17 @@
 
 #include "Reponse.hpp"
 #include "Request.hpp"
+#include <sys/socket.h>
+#include <poll.h>
+#include <netinet/in.h>
+#include <sys/stat.h>
 
 class Client {
 	public:
 		Client();
 		~Client();
 		Client(const Client &other);
+		Client(int fd);
 		
 		Client &operator=(const Client &other);
 
@@ -29,8 +34,11 @@ class Client {
 		bool outputEmpty();
 		
 		Request getRequest();
+		std::string getBufferIn() {return _buffer_in;}
+		std::string getBufferOut() {return _buffer_out;}
+		Reponse getReponse() {return _reponse;}
 		int get_fd();
-		void setResponse(std::string res);
+		void setResponse(Reponse res);
 		
 	private:
 		Reponse _reponse;
@@ -38,4 +46,5 @@ class Client {
 		std::string _buffer_in;
 		std::string _buffer_out;
 		int	_fd;
+		bool _closed;
 };

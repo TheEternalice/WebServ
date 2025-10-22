@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server_parsing.cpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ade-rese <ade-rese@student.42.fr>          +#+  +:+       +#+        */
+/*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/23 09:28:12 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/10/21 16:53:13 by ade-rese         ###   ########.fr       */
+/*   Updated: 2025/10/22 10:28:51 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -196,12 +196,20 @@ void Server::location_methods(std::vector<std::string> tokens){
 		if (!method.empty() && method[method.length() - 1] == ';'){
 			method = method.substr(0, method.length() - 1);
 		}
-		if (_sockets.back()._allowedMethods[method] == 0)
-			_sockets.back()._allowedMethods[method] = 1;
-		_sockets.back()._allowedMethods[method] <<= 1;
-		_sockets.back()._allowedMethods[method] += 1;
+		switch (method[0]) {
+			case 'G':
+				_sockets.back()._allowedMethods[_sockets.back()._path] += 1;
+				break;
+			case 'P':
+				_sockets.back()._allowedMethods[_sockets.back()._path] += 2;
+				break;
+			case 'D':
+				_sockets.back()._allowedMethods[_sockets.back()._path] += 4;
+				break;
+		}
 	}
 }
+
 
 void Server::location_return(std::vector<std::string> tokens){
 	if (tokens.size() < 2)

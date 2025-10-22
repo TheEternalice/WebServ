@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 12:32:35 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/10/20 12:23:59 by lde-merc         ###   ########.fr       */
+/*   Updated: 2025/10/22 11:17:26 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,8 +16,7 @@
 // Constructeur
 Reponse::Reponse() {}
 
-Reponse::Reponse(std::string method, std::string url) {
-	(void)method;
+Reponse::Reponse(std::string url) {
 	std::string path;
 	
 	if (url == "/") {
@@ -27,13 +26,14 @@ Reponse::Reponse(std::string method, std::string url) {
 	}
 	std::ifstream file(path.c_str(), std::ios::binary);
 
-	if (!file) {
-		Reponse res404 = make_404();
+	if (!file || access(path.c_str(), F_OK) != 0) {
+		// Reponse res404 = make_404();
+		Reponse res404 = Reponse(404, "./Error_pages/404.html");
 		_status_code = res404._status_code;
 		_status_text = res404._status_text;
 		_body = res404._body;
 		_headers = res404._headers;
-		return;
+		return ;
 	} else {
 		std::ostringstream oss;
 		oss << file.rdbuf();
@@ -60,6 +60,7 @@ Reponse::Reponse(int num, std::string path) {
 			break;
 		case 404:
 			_status_text = "Not Found";
+			_headers["connection"] = "close";
 			break;
 		case 405: 
 			_status_text = "Method Not Allowed";
@@ -83,8 +84,10 @@ Reponse::Reponse(int num, std::string path) {
 	
 
 	if (_body.empty()) std::cout << "body empty in constructor" << std::endl;
-	_headers["Content-Type"] = "text/plain";	
-	_headers["Content-Length"] = this->to_string();
+	_headers["Content-Type"] = Server::get_content_type(path);	
+	std::ostringstream oss;
+	oss << _body.size();
+	_headers["Content-Length"] = oss.str();
 }
 
 Reponse::~Reponse() {}
@@ -111,8 +114,8 @@ std::map<std::string, std::string> Reponse::get_header() const {
 std::string Reponse::to_string() const {
 	std::ostringstream oss;
 	oss << "HTTP/1.1 " << _status_code << " " << _status_text << "\r\n";
-	for (std::map<std::string, std::string>::const_iterator it = _headers.begin();
-		it != _headers.end(); ++it) {
+	std::map<std::string, std::string>::const_iterator it;
+	for (it = _headers.begin(); it != _headers.end(); ++it) {
 		oss << it->first << ": " << it->second << "\r\n";
 	}
 	oss << "\r\n" << _body;

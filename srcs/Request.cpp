@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/14 16:26:26 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/10/20 14:45:08 by lde-merc         ###   ########.fr       */
+/*   Updated: 2025/10/22 10:49:00 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,36 +19,6 @@ extern char **environ;
 Request::Request() {}
 
 Request::Request(const std::string &request) { parse(request);}
-	// Simple parsing, assumes well-formed request
-	// size_t method_end = request.find(' ');
-	// if (method_end == std::string::npos) return;
-	// _method = request.substr(0, method_end);
-
-	// size_t url_end = request.find(' ', method_end + 1);
-	// if (url_end == std::string::npos) return;
-	// _url = request.substr(method_end + 1, url_end - method_end - 1);
-
-	// size_t version_end = request.find("\r\n", url_end + 1);
-	// if (version_end == std::string::npos) return;
-	// _http_version = request.substr(url_end + 1, version_end - url_end - 1);
-
-	// size_t headers_end = request.find("\r\n\r\n");
-    // if (headers_end != std::string::npos) {
-    //     _body = request.substr(headers_end + 4); // everything after headers
-
-    //     // Optional: enforce Content-Length
-    //     size_t cl_pos = request.find("Content-Length:");
-    //     if (cl_pos != std::string::npos) {
-    //         size_t cl_end = request.find("\r\n", cl_pos);
-    //         std::string cl_str = request.substr(cl_pos + 15, cl_end - cl_pos - 15);
-    //         int content_length = atoi(cl_str.c_str());
-    //         if ((size_t)content_length < _body.size())
-    //             _body = _body.substr(0, content_length);
-    //     }
-    // } else {
-    //     _body = "";
-    // }
-// }
 
 Request::~Request() {}
 
@@ -58,7 +28,12 @@ Request::Request(const Request& other) {
 
 Request &Request::operator=(const Request& other) {
     if (this != &other) {
-        // copy attributes here
+        this->_body = other._body;
+		this->_headers = other._headers;
+		this->_url = other._url;
+		this->_method = other._method;
+		this->_http_version = other._http_version;
+		this->_request_cookies = other._request_cookies;
     }
     return *this;
 }
@@ -173,7 +148,7 @@ Reponse Request::handle_get() {
 		Reponse r = execute_cgi_get(_url);
 		return r;
 	} catch (std::exception &e) {
-		Reponse r = Reponse(_method, _url);
+		Reponse r = Reponse(_url);
 		return r;
 	}		
 }

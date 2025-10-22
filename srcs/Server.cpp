@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ade-rese <ade-rese@student.42.fr>          +#+  +:+       +#+        */
+/*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/14 15:47:12 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/10/21 16:51:01 by ade-rese         ###   ########.fr       */
+/*   Updated: 2025/10/22 11:04:23 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,15 +16,13 @@ std::map<int, Reponse> Server::_static_responses;
 std::map<std::string, std::string> Server::_extensionsToType;
 
 // Constructeur
-Server::Server()
-{
+Server::Server() {
 	std::ifstream file("mime.types");
 	if (!file.is_open())
 		throw std::runtime_error("Could not open mime.types");
 
 	std::string line;
-	while (std::getline(file, line))
-	{
+	while (std::getline(file, line)) {
 		// Ignore comments et lignes vides
 		if (line.empty() || line[0] == '#')
 			continue;
@@ -35,8 +33,7 @@ Server::Server()
 			continue;
 
 		std::string ext;
-		while (iss >> ext)
-		{
+		while (iss >> ext) {
 			if (ext[0] != '.')
 				ext = "." + ext; // normaliser avec un point
 			_extensionsToType[ext] = mime_type;
@@ -49,10 +46,8 @@ Server::~Server() {}
 
 Server::Server(const Server &other) { *this = other; }
 
-Server &Server::operator=(const Server &other)
-{
-	if (this != &other)
-	{
+Server &Server::operator=(const Server &other) {
+	if (this != &other) {
 		// copy attributes here
 		_fds = other._fds;
 		_sockets = other._sockets;
@@ -62,17 +57,14 @@ Server &Server::operator=(const Server &other)
 	return *this;
 }
 
-void Server::copy_socket(std::vector<ServerSocket> other)
-{
+void Server::copy_socket(std::vector<ServerSocket> other) {
 	this->_sockets = other;
 }
 
 std::vector<ServerSocket> Server::get_Socket() { return _sockets; }
 
-void Server::display_Serv()
-{
-	for (size_t i = 0; i < _sockets.size(); i++)
-	{
+void Server::display_Serv() {
+	for (size_t i = 0; i < _sockets.size(); i++){
 		// std::cout << "------- Server " << i + 1 << " -------" << std::endl;
 		std::cout << "Host : ";
 		if (!_sockets[i]._host.empty())
@@ -106,10 +98,12 @@ void Server::display_Serv()
 		// std::cout << "Auto index : ";
 		// if (_sockets[i]._autoIndex)
 		// 	std::cout << _sockets[i]._autoIndex << std::endl;
-		// std::cout << "Allowed Methods : " << std::endl;
+		// std::cout << "Allowed Methods :" << std::endl;
 		// if (!_sockets[i]._allowedMethods.empty()) {
-		// 	for (size_t k = 0; k < _sockets[i]._allowedMethods.size(); k++)
-		// 		std::cout << "   _ " << _sockets[i]._allowedMethods[k] << std::endl;
+		// 	std::map<std::string, int>::const_iterator it;
+		// 	for (it = _sockets[i]._allowedMethods.begin(); it != _sockets[i]._allowedMethods.end(); ++it) {
+		// 		std::cout << "  " << it->first << " : " << it->second << std::endl;
+		// 	}
 		// }
 		// std::cout << std::endl << "CGI Extensions : " << std::endl;
 		// if (!_sockets[i]._cgiExtensions.empty()) {
@@ -126,8 +120,7 @@ void Server::display_Serv()
 	}
 }
 
-std::string Server::get_content_type(const std::string &path)
-{
+std::string Server::get_content_type(const std::string &path) {
 	std::string::size_type dot = path.rfind('.');
 	if (dot == std::string::npos)
 		return "application/octet-stream";
@@ -141,18 +134,16 @@ std::string Server::get_content_type(const std::string &path)
 		return "application/octet-stream";
 }
 
-void Server::init()
-{
-	for (int i = 0; i < (int)_sockets.size(); i++)
-	{
+void Server::init() {
+	for (int i = 0; i < (int)_sockets.size(); i++) {
 		_sockets[i].fd = socket(AF_INET, SOCK_STREAM, 0);
 		if (_sockets[i].fd < 0)
 			throw std::runtime_error("Failed to create socket");
+		_listeningSockets[_sockets[i].fd] = _sockets[i];
 		// Set the socket to non-blocking mode
 		// This allows the server to handle multiple clients without blocking
 		int flags = fcntl(_sockets[i].fd, F_GETFL, 0);
-		if (flags == -1)
-		{
+		if (flags == -1) {
 			std::cerr << "fcntl F_GETFL" << std::endl;
 			exit(1);
 		}
@@ -165,21 +156,18 @@ void Server::init()
 		_sockets[i].address.sin_port = htons(_sockets[i]._port);
 
 		int opt = 1;
-		if (setsockopt(_sockets[i].fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0)
-		{
+		if (setsockopt(_sockets[i].fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0) {
 			close(_sockets[i].fd);
 			throw std::runtime_error("setsockopt failed");
 		}
 
-		if (bind(_sockets[i].fd, (struct sockaddr *)&_sockets[i].address, sizeof(_sockets[i].address)) < 0)
-		{
+		if (bind(_sockets[i].fd, (struct sockaddr *)&_sockets[i].address, sizeof(_sockets[i].address)) < 0) {
 			for (int j = 0; j <= i; j++)
 				close(_sockets[j].fd);
 			throw std::runtime_error("Failed to bind socket");
 		}
 
-		if (listen(_sockets[i].fd, 5) < 0)
-		{
+		if (listen(_sockets[i].fd, 5) < 0) {
 			for (int j = 0; j <= i; j++)
 				close(_sockets[j].fd);
 			throw std::runtime_error("Failed to listen on socket");
@@ -187,10 +175,8 @@ void Server::init()
 	}
 }
 
-void Server::run()
-{
-	for (size_t i = 0; i < _sockets.size(); i++)
-	{
+void Server::run() {
+	for (size_t i = 0; i < _sockets.size(); i++) {
 		struct pollfd pfd;
 		pfd.fd = _sockets[i].fd;
 		pfd.events = POLLIN;
@@ -198,44 +184,36 @@ void Server::run()
 		_fds.push_back(pfd);
 	}
 
-	while (true)
-	{
+	while (true) {
 		int ret = poll(_fds.data(), _fds.size(), 100);
-		if (ret < 0)
-		{
+		if (ret < 0) {
 			if (errno == EINTR)
 				continue;
 			std::cerr << "Poll error" << std::endl;
 			exit(EXIT_FAILURE);
 		}
-		if (ret == 0)
-			continue;
+		if (ret == 0) continue;
 
-		for (size_t i = 0; i < _fds.size(); ++i)
-		{
+		for (size_t i = 0; i < _fds.size(); ++i) {
 			int fd = _fds[i].fd;
 			int re = _fds[i].revents;
 
-			if (re & POLLIN)
-			{
+			if (re & POLLIN) {
 				// Si c’est un socket serveur, on accepte un client
 				// Sinon, c’est un client existant
-				if (isServerSocket(fd))
-				{
+				if (isServerSocket(fd)) {
 					accept_client(fd);
-				}
-				else
-				{
+				} else {
 					Client *cl = _socketToClient[fd];
 					cl->readFromSocket();
-					if (cl->tryParseRequest())
+					if (cl->tryParseRequest()) {
 						handle_request(*cl);
+						_fds[i].events = POLLOUT;
+					}
 				}
 			}
-			if (re & POLLOUT)
-			{
-				if (_socketToClient.count(fd))
-				{
+			if (re & POLLOUT) {
+				if (_socketToClient.count(fd)) {
 					Client *cl = _socketToClient[fd];
 					cl->writeToSocket();
 					if (cl->outputEmpty())
@@ -246,22 +224,19 @@ void Server::run()
 	}
 }
 
-bool Server::isServerSocket(int fd)
-{
+bool Server::isServerSocket(int fd) {
 	for (size_t i = 0; i < _sockets.size(); i++)
 		if (fd == _sockets[i].fd)
 			return true;
 	return false;
 }
 
-void Server::accept_client(int fd)
-{
+void Server::accept_client(int fd) {
 	struct sockaddr_in client_addr;
 	socklen_t client_len = sizeof(client_addr);
 
 	int client_fd = accept(fd, (struct sockaddr *)&client_addr, &client_len);
-	if (client_fd < 0)
-	{
+	if (client_fd < 0) {
 		if (errno == EAGAIN || errno == EWOULDBLOCK)
 			return; // Rien à accepter
 		std::cerr << "accept() failed on fd " << fd << ": "
@@ -271,24 +246,25 @@ void Server::accept_client(int fd)
 
 	// Rend le client non bloquant
 	int flags = fcntl(client_fd, F_GETFL, 0);
-	if (flags == -1 || fcntl(client_fd, F_SETFL, flags | O_NONBLOCK) == -1)
-	{
+	if (flags == -1 || fcntl(client_fd, F_SETFL, flags | O_NONBLOCK) == -1) {
 		std::cerr << "fcntl() failed: " << strerror(errno) << std::endl;
 		close(client_fd);
 		return;
 	}
 
-	ServerSocket *server = NULL;
-	if (_clientToSocket.count(fd))
-		*server = _clientToSocket[fd];
-	else
-	{
-		std::cerr << "Unknown server fd: " << fd << std::endl;
-		close(client_fd);
-		return;
-	}
+	ServerSocket &server = _listeningSockets[fd];
 
-	_clientToSocket[client_fd] = *server;
+    // Créer un nouveau client et lier au serveur
+    Client* client = new Client(client_fd);
+    _socketToClient[client_fd] = client;
+    _clientToSocket[client_fd] = server;
+	
+	if (_listeningSockets.count(fd) == 0) {
+        std::cerr << "Unknown listening socket fd: " << fd << std::endl;
+        close(client_fd);
+        return;
+    }
+
 
 	// Ajouter à poll()
 	struct pollfd pfd;
@@ -297,13 +273,12 @@ void Server::accept_client(int fd)
 	pfd.revents = 0;
 	_fds.push_back(pfd);
 
-	std::cout << "New client connected on port " << server->_port
+	std::cout << "New client connected on port " << server._port
 			  << " (fd=" << client_fd << ")" << std::endl;
 }
 
-void Server::handle_request(Client &client)
-{
-	const std::string &method = client.getRequest().get_method();
+void Server::handle_request(Client &client) {
+	const std::string method = client.getRequest().get_method();
 	Reponse res;
 	ServerSocket* server = &_clientToSocket[client.get_fd()];
 	if (!is_method_allowed(method, client)) {
@@ -318,33 +293,40 @@ void Server::handle_request(Client &client)
 		res = server->_autoResponse[400];
 	}
 
-	res.set_header("Connection", "keep-alive");
-	res.set_header("Keep-Alive", "timeout=20, max=100");
-	client.setResponse(res.to_string());
+	if (client.getRequest().getHeader("Connection") == "keep-alive") {
+		res.set_header("Connection", "keep-alive");
+		res.set_header("Keep-Alive", "timeout=20, max=100");
+	} else {
+		res.set_header("Connection", "close");
+	}
+
+	client.setResponse(res);
 }
 
 // C'est l'idee qui compte !
-bool Server::is_method_allowed(const std::string &method, Client &client)
-{
+bool Server::is_method_allowed(const std::string &method, Client &client) {
 	ServerSocket *server = &_clientToSocket[client.get_fd()];
 	int nummethode = 0;
 	switch (method[0]) {
-	case 'G':
-		nummethode = 1;
-		break;
-	case 'P':
-		nummethode = 2;
-		break;
-	case 'D':
-		nummethode = 4;
-		break;
-	default:
-		return false;
+		case 'G':
+			nummethode = 1;
+			break;
+		case 'P':
+			nummethode = 2;
+			break;
+		case 'D':
+			nummethode = 4;
+			break;
+		default:
+			return false;
 	}
 	std::string tmpLocation = client.getRequest().get_url();
-	size_t pos = 0;
-	pos = tmpLocation.find('/', pos + 1);
-	tmpLocation = tmpLocation.substr(0, pos);
+	size_t pos = 0;	
+	pos = tmpLocation.find('/');
+	if (pos + 1 < 15)
+		tmpLocation = tmpLocation.substr(0, pos + 1);
+	else
+		tmpLocation = tmpLocation.substr(0, tmpLocation.length());
 	if ((server->_allowedMethods[tmpLocation] & nummethode) != 0)
 		return true;
 	return false;

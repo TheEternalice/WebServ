@@ -3,23 +3,25 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ade-rese <ade-rese@student.42.fr>          +#+  +:+       +#+        */
+/*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/20 14:17:07 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/10/21 16:42:42 by ade-rese         ###   ########.fr       */
+/*   Updated: 2025/10/22 10:41:14 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "Client.hpp"
+#include "../includes/Client.hpp"
 
 // Constructeur
-Client::Client() {}
+Client::Client() { }
 
-Client::~Client() {}
+Client::~Client() { }
 
 Client::Client(const Client &other) {
     *this = other;
 }
+
+Client::Client(int fd): _fd(fd) { }
 
 Client &Client::operator=(const Client &other) {
     if (this != &other) {
@@ -56,28 +58,6 @@ bool Client::tryParseRequest() {
 }
 
 
-void HTTP_Server::handleRequest(Client& client) {
-	const std::string& method = client.getRequest().get_method();
-	Reponse res;
-
-	if (!is_method_allowed(method, client)) {
-		res = _static_responses[405];
-	} else if (method == "GET") {
-		res = client.getRequest().handle_get();
-	} else if (method == "POST") {
-		res = client.getRequest().handle_post();
-	} else if (method == "DELETE") {
-		res = client.getRequest().handle_delete();
-	} else {
-		res = _static_responses[400];
-	}
-
-	res.set_header("Connection", "keep-alive");
-	res.set_header("Keep-Alive", "timeout=20, max=100");
-	client.setResponse(res.to_string());
-}
-
-
 void Client::writeToSocket() {
 	if (_buffer_out.empty())
 		return;
@@ -103,7 +83,8 @@ int	Client::get_fd() {
 	return (_fd);	
 }
 
-void Client::setResponse(std::string res) {
+void Client::setResponse(Reponse res) {
 	_buffer_out.clear();
-	_buffer_out = res;
+	_buffer_out = res.to_string();
+	_reponse = res;
 }
