@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/20 14:17:13 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/10/22 10:41:29 by lde-merc         ###   ########.fr       */
+/*   Updated: 2025/10/22 15:03:12 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,6 +32,8 @@ class Client {
 		bool tryParseRequest();
 		void writeToSocket();
 		bool outputEmpty();
+		void resetForNextRequest();
+		bool shouldClose() const;
 		
 		Request getRequest();
 		std::string getBufferIn() {return _buffer_in;}

@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: ade-rese <ade-rese@student.42.fr>          +#+  +:+       +#+         #
+#    By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/08/14 15:47:01 by lde-merc          #+#    #+#              #
-#    Updated: 2025/10/21 16:53:30 by ade-rese         ###   ########.fr        #
+#    Updated: 2025/10/22 14:52:23 by lde-merc         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -60,7 +60,7 @@ re: fclean all
 -include $(DEP)
 
 val: all
-	valgrind --leak-check=full --show-leak-kinds=all ./$(NAME) || true
+	valgrind --leak-check=full --show-leak-kinds=all ./$(NAME) conf_file/valid_file/maximal_valid.conf || true
 
 test: all
 	@for file in $(INVALID_FILE); do \

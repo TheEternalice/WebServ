@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 12:32:35 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/10/22 12:36:11 by lde-merc         ###   ########.fr       */
+/*   Updated: 2025/10/22 15:20:00 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -88,18 +88,18 @@ Reponse::Reponse(int num, std::string path) {
 Reponse::~Reponse() {}
 
 Reponse::Reponse(const Reponse &other) {
-    *this = other;
+	*this = other;
 }
 
 Reponse &Reponse::operator=(const Reponse &other) {
-    if (this != &other) {
-        // copy attributes here
+	if (this != &other) {
+		// copy attributes here
 		this->_status_code = other._status_code;
 		this->_status_text = other._status_text;
 		this->_headers = other._headers;
 		this->_body = other._body;
-    }
-    return *this;
+	}
+	return *this;
 }
 
 std::map<std::string, std::string> Reponse::get_header() const {
@@ -116,50 +116,6 @@ std::string Reponse::to_string() const {
 	oss << "\r\n" << _body;
 	return oss.str();
 }
-
-// Reponse Reponse::make_200(const std::string& body, const std::string& type) {
-// 	Reponse r;
-// 	r._status_code = 200;
-// 	r._status_text = "OK";
-// 	r._body = body;
-// 	r._headers["Content-Type"] = type;
-// 	std::ostringstream oss;
-// 	oss << r._body.size();
-// 	r._headers["Content-Length"] = oss.str();
-// 	return r;
-// }
-
-// Reponse Reponse::make_404() {
-// 	 Reponse r;
-// 	r._status_code = 404;
-// 	r._status_text = "Not Found";
-// 	r._body = "404 Not Found";
-
-// 	// std::map<int, std::string> errorPages = ;
-	
-	
-// 	// std::ifstream file();
-// 	// if (!file.is_open()){
-// 	// 	throw CannotBeOpen();
-// 	// }
-	
-
-
-	
-// 	r._headers["Content-Type"] = "text/plain";
-// 	r._headers["Content-Length"] = r.to_string();
-// 	return r;
-// }
-
-// Reponse Reponse::make_405() {
-// 	Reponse r;
-// 	r._status_code = 405;
-// 	r._status_text = "Method Not Allowed";
-// 	r._body = "405 Method Not Allowed";
-// 	r._headers["Content-Type"] = "text/plain";
-// 	r._headers["Content-Length"] = r.to_string();
-// 	return r;
-// }
 
 Reponse Reponse::make_500() {
 	Reponse r;
@@ -193,4 +149,23 @@ void Reponse::set_body(const std::string& body) {
 
 void Reponse::set_header(const std::string& key, const std::string& value) {
 	_headers[key] = value;
+}
+
+
+static std::string toLower(const std::string &s) {
+	std::string out = s;
+	for (size_t i = 0; i < out.size(); ++i) out[i] = static_cast<char>(std::tolower(out[i]));
+	return out;
+}
+
+bool Reponse::isKeepAlive() const {
+	// Cherche header "Connection" en ignorant la casse
+	for (std::map<std::string, std::string>::const_iterator it = _headers.begin(); it != _headers.end(); ++it) {
+		if (toLower(it->first) == "connection") {
+			std::string val = toLower(it->second);
+			if (val.find("close") != std::string::npos) return false;
+			if (val.find("keep-alive") != std::string::npos) return true;
+		}
+	}
+	return true;
 }

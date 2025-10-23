@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/14 15:47:19 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/10/21 17:14:42 by lde-merc         ###   ########.fr       */
+/*   Updated: 2025/10/22 15:10:59 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,7 @@
 #include <unistd.h>
 #include <poll.h>
 #include <vector>
+#include <csignal>
 
 #include <cerrno>
 #include <fcntl.h>
@@ -117,8 +118,13 @@ class Server {
 		std::vector<ServerSocket> get_Socket();
 		void copy_socket(std::vector<ServerSocket> other);
 		bool isServerSocket(int fd);
+		void disconnectClient(int fd);
+		void removeFdFromPoll(int fd);
+
+		void cleanup();
+
 	private:
-		static std::map<int, Reponse> _static_responses;
+		// static std::map<int, Reponse> _static_responses;
 	
 		std::vector<struct pollfd> 					_fds;
 		std::vector<ServerSocket> 					_sockets;
@@ -127,3 +133,5 @@ class Server {
 		std::map<int, ServerSocket> 				_clientToSocket;
 		std::map<int, Client*> 						_socketToClient;
 };
+
+void handle_sigint(int signum);

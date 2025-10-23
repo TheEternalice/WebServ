@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/14 16:26:26 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/10/22 12:56:08 by lde-merc         ###   ########.fr       */
+/*   Updated: 2025/10/22 13:22:58 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -160,7 +160,6 @@ Reponse Request::handle_get() {
 Reponse Request::execute_cgi_get(std::string& url) {
 	std::string path = "." + url;
 	
-	std::cout << "url = " << url << std::endl;
 	// Check si le fichier est executable
 	if (access(path.c_str(), X_OK) != 0 || url == "/") {
 		throw std::runtime_error("");

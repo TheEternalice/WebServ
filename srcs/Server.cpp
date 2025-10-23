@@ -6,14 +6,48 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/14 15:47:12 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/10/22 11:58:24 by lde-merc         ###   ########.fr       */
+/*   Updated: 2025/10/22 15:14:47 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/Server.hpp"
+volatile bool g_running(true);
+Server* g_server = NULL;
 
-std::map<int, Reponse> Server::_static_responses;
+// std::map<int, Reponse> Server::_static_responses;
 std::map<std::string, std::string> Server::_extensionsToType;
+
+void handle_sigint(int signum) {
+	(void)signum;
+	std::cout << "\nSignal reçu, arrêt du serveur..." << std::endl;
+	g_running = false;
+	g_server->cleanup();
+}
+
+void Server::cleanup() {
+	std::cout << "Nettoyage des connexions..." << std::endl;
+
+	for (size_t i = 0; i < _fds.size(); ++i) {
+		int fd = _fds[i].fd;
+		// Si ce n’est pas un socket serveur
+		if (!isServerSocket(fd)) {
+			std::map<int, Client*>::iterator it = _socketToClient.find(fd);
+			if (it != _socketToClient.end()) {
+				if (it->second) {
+					delete it->second; // libère le client
+					it->second = NULL;
+				}
+				close(fd); // ferme le descripteur
+			}
+		} else {
+			close(fd);
+		}
+	}
+	_socketToClient.clear();
+	_fds.clear();
+	std::cout << "Serveur arrêté proprement." << std::endl;
+}
+
 
 // Constructeur
 Server::Server() {
@@ -51,7 +85,6 @@ Server &Server::operator=(const Server &other) {
 		// copy attributes here
 		_fds = other._fds;
 		_sockets = other._sockets;
-		_static_responses = other._static_responses;
 		_extensionsToType = other._extensionsToType;
 	}
 	return *this;
@@ -184,7 +217,7 @@ void Server::run() {
 		_fds.push_back(pfd);
 	}
 
-	while (true) {
+	while (g_running) {
 		int ret = poll(_fds.data(), _fds.size(), 100);
 		if (ret < 0) {
 			if (errno == EINTR)
@@ -199,28 +232,39 @@ void Server::run() {
 			int re = _fds[i].revents;
 
 			if (re & POLLIN) {
-				// Si c’est un socket serveur, on accepte un client
-				// Sinon, c’est un client existant
 				if (isServerSocket(fd)) {
 					accept_client(fd);
 				} else {
 					Client *cl = _socketToClient[fd];
+					if (!cl) continue;
 					cl->readFromSocket();
+
 					if (cl->tryParseRequest()) {
 						handle_request(*cl);
 						_fds[i].events = POLLOUT;
 					}
 				}
 			}
+
 			if (re & POLLOUT) {
-				if (_socketToClient.count(fd)) {
-					Client *cl = _socketToClient[fd];
-					cl->writeToSocket();
-					if (cl->outputEmpty())
-						_fds[i].events &= ~POLLOUT;
+				std::map<int, Client*>::iterator it = _socketToClient.find(fd);
+				if (it == _socketToClient.end())
+					continue;
+
+				Client *cl = it->second;
+				cl->writeToSocket();
+
+				if (cl->outputEmpty()) {
+					if (cl->getReponse().isKeepAlive()) {
+						cl->resetForNextRequest(); // ← ici le point clé
+						_fds[i].events = POLLIN;
+					} else {
+						disconnectClient(fd);
+					}
 				}
 			}
 		}
+		sleep(1);
 	}
 }
 
@@ -334,4 +378,25 @@ bool Server::is_method_allowed(const std::string &method, Client &client) {
 	if ((server->_allowedMethods[tmpLocation] & nummethode) != 0)
 		return true;
 	return false;
+}
+
+void Server::disconnectClient(int fd) {
+	std::map<int, Client*>::iterator it = _socketToClient.find(fd);
+	if (it != _socketToClient.end()) {
+		if (it->second)
+			delete it->second;
+		_socketToClient.erase(it);
+	}
+	close(fd);
+	removeFdFromPoll(fd);
+	std::cout << "Client (fd=" << fd << ") déconnecté." << std::endl;
+}
+
+void Server::removeFdFromPoll(int fd) {
+	for (std::vector<struct pollfd>::iterator it = _fds.begin(); it != _fds.end(); ++it) {
+		if (it->fd == fd) {
+			_fds.erase(it);
+			return;
+		}
+	}
 }

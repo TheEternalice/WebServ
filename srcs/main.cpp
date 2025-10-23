@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/14 15:54:02 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/10/22 11:55:30 by lde-merc         ###   ########.fr       */
+/*   Updated: 2025/10/22 14:58:12 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,10 +14,7 @@
 #include <iostream>
 #include <stdexcept>
 
-// static void print_error(std::string error)
-// {
-// 	std::cerr << error << std::endl;
-// }
+extern Server* g_server;
 
 int	main(int argc, char *argv[])
 {
@@ -27,6 +24,9 @@ int	main(int argc, char *argv[])
 			throw std::out_of_range("Not good amount of argument");
 		file_name = argv[1];
 		Server serv;
+		g_server = &serv;
+
+		std::signal(SIGINT, handle_sigint);
 
 		serv.parsing(file_name);
 		std::vector<ServerSocket> so = serv.get_Socket();

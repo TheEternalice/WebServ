@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/20 14:17:07 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/10/22 10:41:14 by lde-merc         ###   ########.fr       */
+/*   Updated: 2025/10/22 15:16:07 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -87,4 +87,16 @@ void Client::setResponse(Reponse res) {
 	_buffer_out.clear();
 	_buffer_out = res.to_string();
 	_reponse = res;
+}
+
+bool Client::shouldClose() const {
+	return _closed;
+}
+
+void Client::resetForNextRequest() {
+	_request = Request();
+	_reponse = Reponse();
+	_buffer_in.clear();
+	_buffer_out.clear();
+	_closed = false;
 }
