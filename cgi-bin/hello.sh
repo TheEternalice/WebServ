@@ -15,4 +15,4 @@ EOF
 chmod +x ./cgi-bin/test.sh
 echo "The script test.sh has been created as following:"
 cat ./cgi-bin/test.sh
-echo "You can execute it by accessing /cgi-bin/test.sh via the web server or by pressing the test.sh button."
+echo "You can execute it by pressing the test.sh button."

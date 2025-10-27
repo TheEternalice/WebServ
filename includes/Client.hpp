@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/20 14:17:13 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/10/22 15:03:12 by lde-merc         ###   ########.fr       */
+/*   Updated: 2025/10/27 09:55:56 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,9 +36,9 @@ class Client {
 		bool shouldClose() const;
 		
 		Request getRequest();
-		std::string getBufferIn() {return _buffer_in;}
-		std::string getBufferOut() {return _buffer_out;}
-		Reponse getReponse() {return _reponse;}
+		std::string getBufferIn();
+		std::string getBufferOut();
+		Reponse getReponse();
 		int get_fd();
 		void setResponse(Reponse res);
 		

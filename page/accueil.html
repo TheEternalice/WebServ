@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="fr">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width,initial-scale=1" />
+	<title>Accueil – Mon serveur</title>
+	<style>
+		:root{
+			--bg:#071022;
+			--card:#0b1220;
+			--accent:#3b82f6;
+			--muted:#9aa6b2;
+			--white:#eef2f7;
+		}
+		*{box-sizing:border-box}
+		body{
+			margin:0;
+			min-height:100vh;
+			display:flex;
+			align-items:center;
+			justify-content:center;
+			background:linear-gradient(180deg,#051026 0%, #071827 100%);
+			color:var(--white);
+			font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial;
+			padding:2rem;
+		}
+		.container{
+			width:100%;
+			max-width:900px;
+			background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));
+			border-radius:12px;
+			padding:2rem;
+			box-shadow:0 10px 30px rgba(2,6,23,0.6);
+			border:1px solid rgba(255,255,255,0.03);
+			text-align:center;
+		}
+		h1{margin:0 0 .5rem 0;font-size:1.8rem;}
+		p.lead{margin:0 0 2rem 0;color:var(--muted);}
+		.nav{
+			display:flex;
+			justify-content:center;
+			flex-wrap:wrap;
+			gap:.75rem;
+		}
+		a.btn{
+			display:inline-block;
+			background:transparent;
+			border:1px solid rgba(255,255,255,0.06);
+			padding:.7rem 1.2rem;
+			color:var(--white);
+			border-radius:8px;
+			text-decoration:none;
+			font-weight:600;
+			transition:transform .08s ease, box-shadow .08s, background .2s;
+		}
+		a.btn:hover,
+		a.btn:active {
+		background: linear-gradient(90deg, var(--accent), #60a5fa);
+		color: white;
+		transform: translateY(-2px);
+		border-color: transparent;
+		}
+		footer{
+			margin-top:2rem;
+			color:var(--muted);
+			font-size:.9rem;
+		}
+	</style>
+</head>
+	<body>
+		<div class="container">
+			<h1>Bienvenue sur Webmed !</h1>
+			<p class="lead">Choisis une section à explorer :</p>
+			<div class="nav">
+				<a href="/page/POST.html" class="btn">Upload</a>
+				<a href="/page/CGI.html" class="btn">CGI Scripts</a>
+				<a href="/page/DELETE.html" class="btn">Delete</a>
+				<a href="/old" class="btn">Redirection</a>
+			</div>
+			<footer>
+				&copy; 2025 Mon serveur web – Propulsé par C++
+			</footer>
+		</div>
+	</body>
+</html>
+
+

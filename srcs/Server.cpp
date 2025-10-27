@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/14 15:47:12 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/10/22 15:14:47 by lde-merc         ###   ########.fr       */
+/*   Updated: 2025/10/27 13:03:52 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -264,7 +264,6 @@ void Server::run() {
 				}
 			}
 		}
-		sleep(1);
 	}
 }
 
@@ -317,8 +316,8 @@ void Server::accept_client(int fd) {
 	pfd.revents = 0;
 	_fds.push_back(pfd);
 
-	std::cout << "New client connected on port " << server._port
-			  << " (fd=" << client_fd << ")" << std::endl;
+	// std::cout << "New client connected on port " << server._port
+	// 		  << " (fd=" << client_fd << ")" << std::endl;
 }
 
 void Server::handle_request(Client &client) {
@@ -389,7 +388,7 @@ void Server::disconnectClient(int fd) {
 	}
 	close(fd);
 	removeFdFromPoll(fd);
-	std::cout << "Client (fd=" << fd << ") déconnecté." << std::endl;
+	std::cout << "Client (fd=" << fd << ") disconnected." << std::endl;
 }
 
 void Server::removeFdFromPoll(int fd) {

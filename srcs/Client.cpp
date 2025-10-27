@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/20 14:17:07 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/10/22 15:16:07 by lde-merc         ###   ########.fr       */
+/*   Updated: 2025/10/27 12:01:23 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,8 +51,7 @@ bool Client::tryParseRequest() {
 	size_t pos = _buffer_in.find("\r\n\r\n");
 	if (pos == std::string::npos)
 		return false; // pas encore complet
-
-	_request = Request(_buffer_in.substr(0, pos + 4));
+	_request = Request(_buffer_in);
 	_buffer_in.erase(0, pos + 4); // garde ce qui reste
 	return true;
 }
@@ -99,4 +98,16 @@ void Client::resetForNextRequest() {
 	_buffer_in.clear();
 	_buffer_out.clear();
 	_closed = false;
+}
+
+std::string Client::getBufferIn() {
+	return _buffer_in;
+}
+
+std::string Client::getBufferOut() {
+	return _buffer_out;
+}
+
+Reponse Client::getReponse() {
+	return _reponse;
 }

@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 12:32:35 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/10/22 15:20:00 by lde-merc         ###   ########.fr       */
+/*   Updated: 2025/10/27 10:13:30 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,7 @@ Reponse::Reponse(std::string url) {
 	std::string path;
 	
 	if (url == "/") {
-		path = "./page/acceuil.html";
+		path = "./page/accueil.html";
 	} else {
 		path = "." + url; // exemple : "/style.css" → "./style.css"
 	}
@@ -55,7 +55,7 @@ Reponse::Reponse(int num, std::string path) {
 			break;
 		case 404:
 			_status_text = "Not Found";
-			_headers["connection"] = "close";
+			_headers["Connection"] = "close";
 			break;
 		case 405: 
 			_status_text = "Method Not Allowed";
@@ -160,7 +160,8 @@ static std::string toLower(const std::string &s) {
 
 bool Reponse::isKeepAlive() const {
 	// Cherche header "Connection" en ignorant la casse
-	for (std::map<std::string, std::string>::const_iterator it = _headers.begin(); it != _headers.end(); ++it) {
+	std::map<std::string, std::string>::const_iterator it;
+	for (it = _headers.begin(); it != _headers.end(); ++it) {
 		if (toLower(it->first) == "connection") {
 			std::string val = toLower(it->second);
 			if (val.find("close") != std::string::npos) return false;

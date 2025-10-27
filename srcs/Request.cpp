@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/14 16:26:26 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/10/22 13:22:58 by lde-merc         ###   ########.fr       */
+/*   Updated: 2025/10/27 13:02:36 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,9 @@ extern char **environ;
 // Constructeur
 Request::Request() {}
 
-Request::Request(const std::string &request) { parse(request);}
+Request::Request(const std::string &request) {
+	parse(request);
+}
 
 Request::~Request() {}
 
@@ -58,8 +60,10 @@ void Request::parse(const std::string &buffer) {
 	if (pos == std::string::npos) {
 		throw (std::runtime_error("Invalid HTTP request"));
 	}
+	
 	std::string header = buffer.substr(0, pos);
 	std::string body = buffer.substr(pos + 4);
+	
 	std::istringstream stream(header);
 	std::string line;
 	if (!std::getline(stream, line))
@@ -80,13 +84,17 @@ void Request::parse(const std::string &buffer) {
 		std::string value = line.substr(colon + 1);
 		_headers[key] = value;
 	}
+	_headers["Connection"] = "keep-alive";
 	parseCookies();
 	if (hasHeader("Content-Length")) {
 		int len = to_int(getHeader("Content-Length"));
 		_body = body.substr(0, len);
 	}
-	else if (hasHeader("Transfer-Encoding") && getHeader("Transfer-Encoding") == "chunked") {_body = parseChunked(body);}
-	else {_body = body;}
+	else if (hasHeader("Transfer-Encoding") && getHeader("Transfer-Encoding") == "chunked") {
+		_body = parseChunked(body);
+	}else {
+		_body = body;
+	}
 }
 
 bool Request::hasHeader(const std::string &buffer) const {return (_headers.find(buffer) != _headers.end());}
@@ -267,7 +275,6 @@ Reponse Request::handle_post() {
 	}
 	
 	Reponse r;
-	// std::cout << "Handling POST for " << _url << " body = " << _body << std::endl;
 	r = execute_cgi_post(_url, _body); // On passe le body au CGI
 	if (r.get_status_code() == -1) {
 		std::ofstream out(path.c_str(), std::ios::binary);
@@ -426,8 +433,6 @@ Reponse Request::execute_cgi_post(std::string& url, std::string& body) {
 	* Retourne 500 si erreur serveur
 *******************************************************/
 Reponse Request::handle_delete() {
-	std::cout << "Handling DELETE for " << _url << std::endl;
-	
 	std::string path = "." + _url;
 	
 	// Check si le fichier est ecrivable
