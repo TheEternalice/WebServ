@@ -36,6 +36,24 @@
 			h1{ margin:0 0 .5rem 0; font-size:1.25rem; }
 			p.lead{ margin:0 0 1rem 0; color:var(--muted); }
 
+			.viewer {
+				margin-top:1rem;
+				background: rgba(255,255,255,0.02);
+				border-radius:10px;
+				padding:0.5rem;
+				border:1px solid rgba(255,255,255,0.02);
+				min-height:300px;
+				display:flex;
+			}
+
+			iframe.output {
+				border:0;
+				width:100%;
+				height:100%;
+				border-radius:6px;
+				background:white;
+			}
+			
 			.controls{
 				display:flex;
 				gap:.75rem;
@@ -96,6 +114,9 @@
 			<div class="controls">
 				<form action="/upload/test.txt" method="post" onsubmit="return deleteFile(this)" target="deleteResult">
 					<button type="submit" class="btn primary">Supprimer test.txt</button>
+				</form>
+				<form action="/upload/note.txt" method="post" onsubmit="return deleteFile(this)" target="deleteResult">
+					<button type="submit" class="btn primary">Supprimer note.txt</button>
 				</form>
 			</div>
 

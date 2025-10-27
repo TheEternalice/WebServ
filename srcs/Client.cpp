@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/20 14:17:07 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/10/27 12:01:23 by lde-merc         ###   ########.fr       */
+/*   Updated: 2025/10/27 16:07:17 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,7 @@ Client &Client::operator=(const Client &other) {
 }
 
 void Client::readFromSocket() {
-	char buffer[1024];
+	char buffer[4096];
 	int bytes_read = recv(_fd, buffer, sizeof(buffer), 0);
 
 	if (bytes_read < 0) {
@@ -47,15 +47,32 @@ void Client::readFromSocket() {
 	_buffer_in.append(buffer, bytes_read);
 }
 
-bool Client::tryParseRequest() {
-	size_t pos = _buffer_in.find("\r\n\r\n");
-	if (pos == std::string::npos)
-		return false; // pas encore complet
-	_request = Request(_buffer_in);
-	_buffer_in.erase(0, pos + 4); // garde ce qui reste
-	return true;
-}
+// bool Client::tryParseRequest() {
+// 	size_t pos = _buffer_in.find("\r\n\r\n");
+// 	if (pos == std::string::npos)
+// 		return false; // pas encore complet
+// 	_request = Request(_buffer_in);
+// 	_buffer_in.erase(0, pos + 4); // garde ce qui reste
+// 	return true;
+// }
 
+bool Client::tryParseRequest() {
+    if (!_request.hasHeader("Content-Length")) {
+        // Si on a déjà reçu le header, on peut parser
+        if (_buffer_in.find("\r\n\r\n") != std::string::npos) {
+            _request = Request(_buffer_in);
+			return true;
+		}
+    } else {
+        int len = to_int(_request.getHeader("Content-Length"));
+        size_t bodyStart = _buffer_in.find("\r\n\r\n");
+        if (bodyStart != std::string::npos && _buffer_in.size() >= bodyStart + 4 + len) {
+            _request = Request(_buffer_in);
+			return true;
+		}
+    }
+    return false; // pas encore tout reçu
+}
 
 void Client::writeToSocket() {
 	if (_buffer_out.empty())

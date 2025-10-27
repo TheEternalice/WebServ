@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/20 14:17:13 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/10/27 09:55:56 by lde-merc         ###   ########.fr       */
+/*   Updated: 2025/10/27 16:07:55 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 
 #include "Reponse.hpp"
 #include "Request.hpp"
+#include "Utils.hpp"
 #include <sys/socket.h>
 #include <poll.h>
 #include <netinet/in.h>

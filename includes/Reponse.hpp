@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 12:32:28 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/10/22 15:11:55 by lde-merc         ###   ########.fr       */
+/*   Updated: 2025/10/27 15:23:15 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,8 +33,6 @@ class Reponse {
 		std::string to_string() const;
 
 		static Reponse make_200(const std::string& body, const std::string& type);
-		// static Reponse make_404();
-		// static Reponse make_405();
 		static Reponse make_500();
 		bool isKeepAlive() const;
 

@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/14 15:47:12 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/10/27 13:03:52 by lde-merc         ###   ########.fr       */
+/*   Updated: 2025/10/27 16:49:24 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -94,7 +94,9 @@ void Server::copy_socket(std::vector<ServerSocket> other) {
 	this->_sockets = other;
 }
 
-std::vector<ServerSocket> Server::get_Socket() { return _sockets; }
+std::vector<ServerSocket> Server::get_Socket() {
+	return _sockets;
+}
 
 void Server::display_Serv() {
 	for (size_t i = 0; i < _sockets.size(); i++){
@@ -330,7 +332,22 @@ void Server::handle_request(Client &client) {
 		} else if (method == "GET") {
 			res = client.getRequest().handle_get();
 		} else if (method == "POST") {
-			res = client.getRequest().handle_post();
+			Request req = client.getRequest();
+			ServerSocket socket = _clientToSocket[client.get_fd()];
+			std::string contentType = req.getHeader("Content-Type");
+			if (contentType.find("multipart/form-data") != std::string::npos) {
+				if (handleFileUpload(req.get_body(), contentType, socket._upload_dir)) {
+					res = Reponse(client.getRequest().get_url());
+					res.set_header("Content-Type", "text/html");
+					std::string boby ="<p style='color:green;'>Upload réussi !</p>";
+					res.set_body(boby);
+					std::ostringstream oss_len;
+					oss_len << boby.size();
+					res.set_header("Content-Length", oss_len.str());
+				}
+			}else {
+				res = client.getRequest().handle_post();
+			}
 		}else if (method == "DELETE") {
 			res = client.getRequest().handle_delete();
 		} else {
@@ -348,6 +365,7 @@ void Server::handle_request(Client &client) {
 	}
 
 	client.setResponse(res);
+
 }
 
 // C'est l'idee qui compte !
@@ -399,3 +417,44 @@ void Server::removeFdFromPoll(int fd) {
 		}
 	}
 }
+
+bool Server::handleFileUpload(const std::string& body, const std::string& contentType, const std::string& uploadDir) {
+	// Extraire le boundary
+	std::string boundaryKey = "boundary=";
+	size_t bpos = contentType.find(boundaryKey);
+	if (bpos == std::string::npos) return false;
+	std::string boundary = "--" + contentType.substr(bpos + boundaryKey.size());
+
+	size_t start = body.find(boundary);
+	if (start == std::string::npos) return false;
+
+	// On saute le boundary et les headers de la partie
+	size_t headerEnd = body.find("\r\n\r\n", start);
+	if (headerEnd == std::string::npos) return false;
+	headerEnd += 4; // sauter \r\n\r\n
+
+	// Récupérer le nom du fichier depuis Content-Disposition
+	size_t fnStart = body.find("filename=\"", start);
+	if (fnStart == std::string::npos) return false;
+	fnStart += 10;
+	size_t fnEnd = body.find("\"", fnStart);
+	if (fnEnd == std::string::npos) return false;
+	std::string filename = body.substr(fnStart, fnEnd - fnStart);
+	
+	// Contenu du fichier
+	size_t dataEnd = body.find(boundary, headerEnd);
+	if (dataEnd == std::string::npos) return false;
+
+	std::string fileContent = body.substr(headerEnd, dataEnd - headerEnd - 2); // enlever le \r\n avant boundary
+
+	// Écriture sur le disque
+	std::ofstream file((uploadDir + "/" + filename).c_str(), std::ios::binary);
+	if (!file.is_open()) return false;
+
+
+	file.write(fileContent.c_str(), fileContent.size());
+	file.close();
+
+	return true;
+}
+

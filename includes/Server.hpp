@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/14 15:47:19 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/10/22 15:10:59 by lde-merc         ###   ########.fr       */
+/*   Updated: 2025/10/27 15:21:27 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -111,6 +111,7 @@ class Server {
 		void accept_client(int fd);
 		// void handle_request(int i);
 		void handle_request(Client& client);
+		bool handleFileUpload(const std::string& body, const std::string& contentType, const std::string& uploadDir);
 		// bool is_method_allowed(const std::string &method);
 		bool is_method_allowed(const std::string &method, Client &client);
 		
