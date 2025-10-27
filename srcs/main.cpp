@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ade-rese <ade-rese@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/14 15:54:02 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/10/22 14:58:12 by lde-merc         ###   ########.fr       */
+/*   Updated: 2025/10/27 13:14:33 by ade-rese         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,8 +21,9 @@ int	main(int argc, char *argv[])
 	std::string file_name;
 	try {
 		if (argc != 2)
-			throw std::out_of_range("Not good amount of argument");
-		file_name = argv[1];
+			file_name = "./conf_file/valid_file/maximal_valid.conf";
+		else
+			file_name = argv[1];
 		Server serv;
 		g_server = &serv;
 
