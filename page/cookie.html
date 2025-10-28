@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+	<meta charset="utf-8">
+	<title>Gestion des Cookies</title>
+	<style>
+		body {
+			font-family: Arial, sans-serif;
+			margin: 20px;
+		}
+
+		.section {
+			margin: 20px 0;
+			padding: 15px;
+			border: 1px solid #ccc;
+		}
+
+		button {
+			margin: 5px;
+			padding: 10px;
+		}
+
+		pre {
+			background: #f5f5f5;
+			padding: 10px;
+		}
+
+		.timestamp {
+			color: #666;
+			font-size: 0.9em;
+		}
+	</style>
+</head>
+
+<body>
+	<h1>🍪 Gestion des Cookies</h1>
+
+	<div class="section">
+		<h3>Cookie Local</h3>
+		<p id="cookieLocal">(non chargé)</p>
+		<p class="timestamp" id="localTime"></p>
+		<button onclick="creerCookie()">Créer Cookie</button>
+		<button onclick="lireCookie()">Lire Cookie</button>
+		<button onclick="supprimerCookie()">Supprimer Cookie</button>
+	</div>
+
+	<div class="section">
+		<h3>Cookie Serveur</h3>
+		<pre id="cookieServeur">(non chargé)</pre>
+		<p class="timestamp" id="serverTime"></p>
+		<button onclick="actualiserServeur()">Actualiser</button>\
+	</div>
+
+	<script>
+		function updateTimestamp(elementId) {
+			const now = new Date();
+			document.getElementById(elementId).textContent =
+				`Dernière mise à jour: ${now.toLocaleTimeString()}`;
+		}
+
+		function creerCookie() {
+			const valeur = prompt('Valeur du cookie:', 'test_' + Date.now());
+			if (valeur) {
+				document.cookie = `monCookie=${valeur}; path=/; max-age=604800`;
+				lireCookie();
+				console.log('Cookie créé:', document.cookie);
+				updateTimestamp('localTime');
+			}
+		}
+
+		function lireCookie() {
+			const cookies = document.cookie.split(';');
+			let monCookie = 'Aucun cookie';
+			for (let cookie of cookies) {
+				const [name, value] = cookie.trim().split('=');
+				if (name === 'monCookie') {
+					monCookie = value;
+					break;
+				}
+			}
+			document.getElementById('cookieLocal').textContent = monCookie;
+			updateTimestamp('localTime');
+		}
+
+		function supprimerCookie() {
+			document.cookie = 'monCookie=; path=/; max-age=0';
+			lireCookie();
+			console.log('Cookie supprimé');
+		}
+
+		function actualiserServeur() {
+			console.log('Actualisation serveur...');
+			fetch('http://localhost:8080/cgi-bin/cookie_simple.py')
+				.then(r => r.text())
+				.then(t => {
+					document.getElementById('cookieServeur').textContent = t;
+					console.log('Serveur actualisé');
+					updateTimestamp('serverTime');
+				})
+				.catch(err => {
+					console.error('Erreur:', err);
+					document.getElementById('cookieServeur').textContent = 'Erreur: ' + err.message;
+				});
+		}
+
+		function modifierCookieServeur() {
+			console.log('Modification cookie serveur');
+			const nouvelleValeur = prompt('Nouvelle valeur pour le cookie serveur:', '');
+
+			if (nouvelleValeur !== null && nouvelleValeur !== '') {
+				console.log('Envoi nouvelle valeur au serveur:', nouvelleValeur);
+
+				fetch('http://localhost:8080/cgi-bin/cookie_simple.py', {
+					method: 'POST',
+					headers: { 'Content-Type': 'text/plain' },
+					body: nouvelleValeur
+				})
+					.then(r => r.text())
+					.then(t => {
+						console.log('Réponse serveur:', t);
+						setTimeout(() => {
+							lireCookie();
+							actualiserServeur();
+						}, 500);
+					})
+					.catch(err => {
+						console.error('Erreur modification serveur:', err);
+					});
+			}
+		}
+
+		function supprimerCookieServeur() {
+			console.log('Suppression cookie serveur');
+			if (confirm('Supprimer le cookie côté serveur ?')) {
+				console.log('Envoi suppression au serveur');
+
+				fetch('http://localhost:8080/cgi-bin/cookie_simple.py', {
+					method: 'POST',
+					headers: { 'Content-Type': 'text/plain' },
+					body: ''
+				})
+					.then(r => r.text())
+					.then(t => {
+						console.log('Réponse serveur:', t);
+						setTimeout(() => {
+							lireCookie();
+							actualiserServeur();
+						}, 500);
+					})
+					.catch(err => {
+						console.error('Erreur suppression serveur:', err);
+					});
+			}
+		}
+
+		// Initialisation
+		lireCookie();
+		actualiserServeur();
+	</script>
+</body>
+
+</html>

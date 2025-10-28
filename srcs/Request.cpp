@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
+/*   By: gibz <gibz@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/14 16:26:26 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/10/27 16:55:02 by lde-merc         ###   ########.fr       */
+/*   Updated: 2025/10/28 23:29:24 by gibz             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -265,10 +265,33 @@ Reponse Request::execute_cgi_get(std::string& url) {
 		close(pipe_fd[0]);
 		dup2(pipe_fd[1], STDOUT_FILENO);
 		close(pipe_fd[1]);
+
+		std::string request_method = "REQUEST_METHOD=GET";
+		std::string path_env = "PATH=/usr/bin:/bin";
+		
+		std::string cookies_header = getHeader("Cookie");
+		std::string cookie_env;
+		if (!cookies_header.empty()) {
+			cookie_env = "HTTP_COOKIE=" + cookies_header;
+		}
+		
+		std::vector<std::string> env_strings;
+		env_strings.push_back(request_method);
+		env_strings.push_back(path_env);
+		if (!cookie_env.empty()) {
+			env_strings.push_back(cookie_env);
+		}
+		
+		char **envp = new char*[env_strings.size() + 1];
+		for (size_t i = 0; i < env_strings.size(); i++) {
+			envp[i] = const_cast<char*>(env_strings[i].c_str());
+		}
+		envp[env_strings.size()] = NULL;
+		
 		char *args[] = {const_cast<char*>(path.c_str()), NULL};
-		extern char **environ;
-		execve(path.c_str(), args, environ);
+		execve(path.c_str(), args, envp);
 		exit(1);
+		
 	} else {		
 		close(pipe_fd[1]);
 		
@@ -418,6 +441,10 @@ Reponse Request::execute_cgi_post(std::string& url, std::string& body) {
 		cgi_vars.push_back("CONTENT_TYPE=application/x-www-form-urlencoded");
 		cgi_vars.push_back("CONTENT_LENGTH=" + oss.str());
 		cgi_vars.push_back("PATH=/usr/bin:/bin");
+		std::string cookies_header = getHeader("Cookie");
+		if (!cookies_header.empty()) {
+			cgi_vars.push_back("HTTP_COOKIE=" + cookies_header);
+		}
 		for (size_t i = 0; i < cgi_vars.size(); ++i) {
 			std::string key = cgi_vars[i].substr(0, cgi_vars[i].find('='));
 			bool found = false;
@@ -433,13 +460,12 @@ Reponse Request::execute_cgi_post(std::string& url, std::string& body) {
 		}
 		char **envp = new char*[env_vec.size() + 1];
 		for (size_t i = 0; i < env_vec.size(); i++)
-			envp[i] = strdup(env_vec[i].c_str());
+			envp[i] = const_cast<char*>(env_vec[i].c_str());
 		envp[env_vec.size()] = NULL;
 
 		char *args[] = {const_cast<char*>(path.c_str()), NULL};
 		execve(path.c_str(), args, envp);
 		perror("execve failed");
-		for (size_t i = 0; i < env_vec.size(); i++) free(envp[i]);
 		delete[] envp;
 		exit(1);
 	} else {
