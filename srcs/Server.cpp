@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ade-rese <ade-rese@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/14 15:47:12 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/10/27 16:49:24 by lde-merc         ###   ########.fr       */
+/*   Updated: 2025/10/28 11:07:47 by ade-rese         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -99,17 +99,24 @@ std::vector<ServerSocket> Server::get_Socket() {
 }
 
 void Server::display_Serv() {
+	std::string msg = "";
 	for (size_t i = 0; i < _sockets.size(); i++){
 		// std::cout << "------- Server " << i + 1 << " -------" << std::endl;
-		std::cout << "Host : ";
-		if (!_sockets[i]._host.empty())
-			std::cout << _sockets[i]._host << std::endl;
-		std::cout << "Port : ";
+		// std::cout << "Host-> ";
+		// if (!_sockets[i]._host.empty())
+		// 	std::cout << _sockets[i]._host << std::endl;
+		// else
+		// 	msg = "No host found";
+		std::cout << "Port-> ";
 		if (_sockets[i]._port)
 			std::cout << _sockets[i]._port << std::endl;
-		std::cout << "Server name : ";
+		else
+			msg = "No port found";
+		std::cout << "Server name-> ";
 		if (!_sockets[i]._server_name.empty())
 			std::cout << _sockets[i]._server_name << std::endl;
+		else
+			msg = "No server name found";
 		// std::cout << "Error pages : " << std::endl;
 		// if (!_sockets[i]._error_pages.empty()) {
 		// 	for (size_t j = 0; j < 600; j++){
@@ -152,6 +159,8 @@ void Server::display_Serv() {
 		// if (!_sockets[i]._upload_dir.empty())
 		// 	std::cout << _sockets[i]._upload_dir << std::endl;
 		std::cout << "------------------------" << std::endl;
+		if (!msg.empty())
+			throw(std::runtime_error(msg));
 	}
 }
 
@@ -457,4 +466,3 @@ bool Server::handleFileUpload(const std::string& body, const std::string& conten
 
 	return true;
 }
-
