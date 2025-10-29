@@ -3,31 +3,31 @@
 /*                                                        :::      ::::::::   */
 /*   Reponse.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ade-rese <ade-rese@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 12:32:35 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/09/30 16:17:06 by lde-merc         ###   ########.fr       */
+/*   Updated: 2025/10/29 14:46:37 by ade-rese         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/Reponse.hpp"
 #include "../includes/Server.hpp"
 
-// Constructeur
 Reponse::Reponse() {}
 
-Reponse::Reponse(std::string method, std::string url) {
-	(void)method;
-	std::string path = "." + url; // exemple : "/style.css" → "./style.css"
+Reponse::Reponse(std::string url) {
+	std::string path;
+	
+	if (url == "/") {
+		path = "./page/accueil.html";
+	} else {
+		path = "." + url; // exemple : "/style.css" → "./style.css"
+	}
 	std::ifstream file(path.c_str(), std::ios::binary);
 
-	if (!file) {
-		Reponse res404 = make_404();
-		_status_code = res404._status_code;
-		_status_text = res404._status_text;
-		_body = res404._body;
-		_headers = res404._headers;
-		return;
+	if (!file || access(path.c_str(), F_OK) != 0) {
+		throw (std::runtime_error(""));
+		
 	} else {
 		std::ostringstream oss;
 		oss << file.rdbuf();
@@ -54,6 +54,7 @@ Reponse::Reponse(int num, std::string path) {
 			break;
 		case 404:
 			_status_text = "Not Found";
+			_headers["Connection"] = "close";
 			break;
 		case 405: 
 			_status_text = "Method Not Allowed";
@@ -77,25 +78,26 @@ Reponse::Reponse(int num, std::string path) {
 	
 
 	if (_body.empty()) std::cout << "body empty in constructor" << std::endl;
-	_headers["Content-Type"] = "text/plain";	
-	_headers["Content-Length"] = this->to_string();
+	_headers["Content-Type"] = Server::get_content_type(path);	
+	std::ostringstream oss;
+	oss << _body.size();
+	_headers["Content-Length"] = oss.str();
 }
 
 Reponse::~Reponse() {}
 
 Reponse::Reponse(const Reponse &other) {
-    *this = other;
+	*this = other;
 }
 
 Reponse &Reponse::operator=(const Reponse &other) {
-    if (this != &other) {
-        // copy attributes here
+	if (this != &other) {
 		this->_status_code = other._status_code;
 		this->_status_text = other._status_text;
 		this->_headers = other._headers;
 		this->_body = other._body;
-    }
-    return *this;
+	}
+	return *this;
 }
 
 std::map<std::string, std::string> Reponse::get_header() const {
@@ -105,56 +107,12 @@ std::map<std::string, std::string> Reponse::get_header() const {
 std::string Reponse::to_string() const {
 	std::ostringstream oss;
 	oss << "HTTP/1.1 " << _status_code << " " << _status_text << "\r\n";
-	for (std::map<std::string, std::string>::const_iterator it = _headers.begin();
-		it != _headers.end(); ++it) {
+	std::map<std::string, std::string>::const_iterator it;
+	for (it = _headers.begin(); it != _headers.end(); ++it) {
 		oss << it->first << ": " << it->second << "\r\n";
 	}
 	oss << "\r\n" << _body;
 	return oss.str();
-}
-
-Reponse Reponse::make_200(const std::string& body, const std::string& type) {
-	Reponse r;
-	r._status_code = 200;
-	r._status_text = "OK";
-	r._body = body;
-	r._headers["Content-Type"] = type;
-	std::ostringstream oss;
-	oss << r._body.size();
-	r._headers["Content-Length"] = oss.str();
-	return r;
-}
-
-Reponse Reponse::make_404() {
-	 Reponse r;
-	r._status_code = 404;
-	r._status_text = "Not Found";
-	r._body = "404 Not Found";
-
-	// std::map<int, std::string> errorPages = ;
-	
-	
-	// std::ifstream file();
-	// if (!file.is_open()){
-	// 	throw CannotBeOpen();
-	// }
-	
-
-
-	
-	r._headers["Content-Type"] = "text/plain";
-	r._headers["Content-Length"] = r.to_string();
-	return r;
-}
-
-Reponse Reponse::make_405() {
-	Reponse r;
-	r._status_code = 405;
-	r._status_text = "Method Not Allowed";
-	r._body = "405 Method Not Allowed";
-	r._headers["Content-Type"] = "text/plain";
-	r._headers["Content-Length"] = r.to_string();
-	return r;
 }
 
 Reponse Reponse::make_500() {
@@ -189,4 +147,23 @@ void Reponse::set_body(const std::string& body) {
 
 void Reponse::set_header(const std::string& key, const std::string& value) {
 	_headers[key] = value;
+}
+
+static std::string toLower(const std::string &s) {
+	std::string out = s;
+	for (size_t i = 0; i < out.size(); ++i) out[i] = static_cast<char>(std::tolower(out[i]));
+	return out;
+}
+
+bool Reponse::isKeepAlive() const {
+	// Search header "Connection" by ignoring failures
+	std::map<std::string, std::string>::const_iterator it;
+	for (it = _headers.begin(); it != _headers.end(); ++it) {
+		if (toLower(it->first) == "connection") {
+			std::string val = toLower(it->second);
+			if (val.find("close") != std::string::npos) return false;
+			if (val.find("keep-alive") != std::string::npos) return true;
+		}
+	}
+	return true;
 }

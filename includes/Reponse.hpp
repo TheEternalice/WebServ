@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 12:32:28 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/09/30 12:27:10 by lde-merc         ###   ########.fr       */
+/*   Updated: 2025/10/27 15:23:15 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,11 +17,13 @@
 #include <sstream>
 #include <fstream>
 #include <iostream>
+#include <algorithm>
+#include <cctype>
 
 class Reponse {
 	public:
 		Reponse();
-		Reponse(std::string method, std::string url);
+		Reponse(std::string url);
 		Reponse(int num, std::string path);
 		~Reponse();
 		Reponse(const Reponse &other);
@@ -31,9 +33,8 @@ class Reponse {
 		std::string to_string() const;
 
 		static Reponse make_200(const std::string& body, const std::string& type);
-		static Reponse make_404();
-		static Reponse make_405();
 		static Reponse make_500();
+		bool isKeepAlive() const;
 
 		int get_status_code() const;
 		std::string get_body() const;

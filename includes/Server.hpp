@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/14 15:47:19 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/09/30 16:37:19 by lde-merc         ###   ########.fr       */
+/*   Updated: 2025/10/27 15:21:27 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,10 +19,8 @@
 #include <unistd.h>
 #include <poll.h>
 #include <vector>
-#include <sys/socket.h>
-#include <poll.h>
-#include <netinet/in.h>
-#include <sys/stat.h>
+#include <csignal>
+
 #include <cerrno>
 #include <fcntl.h>
 #include <stdexcept>
@@ -30,12 +28,12 @@
 #include "Request.hpp"
 #include "Reponse.hpp"
 #include "Utils.hpp"
+#include "Client.hpp"
 
 struct ServerSocket {
 	int fd;
-	struct sockaddr_in address;
-	socklen_t _addrlen;
 	int _port;
+	
 	std::string _host;
 	std::string _server_name;
 	std::map<int, std::string> _error_pages;
@@ -43,11 +41,15 @@ struct ServerSocket {
 	std::string _path;
 	std::string _index;
 	std::string _root;
-	bool _autoIndex;
 	std::string _returnPath;
 	std::string _upload_dir;
-
-	std::vector<std::string> _allowedMethods;
+	
+	bool _autoIndex;
+	
+	struct sockaddr_in address;
+	socklen_t _addrlen;
+	
+	std::map<std::string, int> _allowedMethods; // location et methodes en bit
 	std::vector<std::string> _cgiExtensions;
 	std::map<int, Reponse> _autoResponse;
 };
@@ -105,17 +107,32 @@ class Server {
 		 ******************/
 		void init();
 		void run();
-		void accept_client(ServerSocket &s);
-		void handle_request(int i);
-		bool is_method_allowed(const std::string &method);
+		// void accept_client(ServerSocket &s);
+		void accept_client(int fd);
+		// void handle_request(int i);
+		void handle_request(Client& client);
+		bool handleFileUpload(const std::string& body, const std::string& contentType, const std::string& uploadDir);
+		// bool is_method_allowed(const std::string &method);
+		bool is_method_allowed(const std::string &method, Client &client);
 		
 		static std::string get_content_type(const std::string& path);
 		std::vector<ServerSocket> get_Socket();
 		void copy_socket(std::vector<ServerSocket> other);
+		bool isServerSocket(int fd);
+		void disconnectClient(int fd);
+		void removeFdFromPoll(int fd);
+
+		void cleanup();
+
 	private:
-		std::vector<struct pollfd> _fds;
-		std::vector<ServerSocket> _sockets;
-		static std::map<int, Reponse> _static_responses;
-		static std::map<std::string, std::string> _extensionsToType;
-		std::map<int, ServerSocket*> _clientServer;
+		// static std::map<int, Reponse> _static_responses;
+	
+		std::vector<struct pollfd> 					_fds;
+		std::vector<ServerSocket> 					_sockets;
+		static std::map<std::string, std::string> 	_extensionsToType;
+		std::map<int, ServerSocket> 				_listeningSockets;
+		std::map<int, ServerSocket> 				_clientToSocket;
+		std::map<int, Client*> 						_socketToClient;
 };
+
+void handle_sigint(int signum);

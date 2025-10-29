@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ade-rese <ade-rese@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/14 15:54:02 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/09/30 16:40:16 by lde-merc         ###   ########.fr       */
+/*   Updated: 2025/10/27 13:14:33 by ade-rese         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,19 +14,20 @@
 #include <iostream>
 #include <stdexcept>
 
-// static void print_error(std::string error)
-// {
-// 	std::cerr << error << std::endl;
-// }
+extern Server* g_server;
 
 int	main(int argc, char *argv[])
 {
 	std::string file_name;
 	try {
 		if (argc != 2)
-			throw std::out_of_range("Not good amount of argument");
-		file_name = argv[1];
+			file_name = "./conf_file/valid_file/maximal_valid.conf";
+		else
+			file_name = argv[1];
 		Server serv;
+		g_server = &serv;
+
+		std::signal(SIGINT, handle_sigint);
 
 		serv.parsing(file_name);
 		std::vector<ServerSocket> so = serv.get_Socket();
@@ -38,8 +39,8 @@ int	main(int argc, char *argv[])
 						throw std::runtime_error("Multiple server with the same port");
 					}
 			}
-			for (std::map<int, std::string>::const_iterator it = so[i]._error_pages.begin();
-					it != so[i]._error_pages.end(); ++it) {
+			std::map<int, std::string>::const_iterator it;
+			for (it = so[i]._error_pages.begin(); it != so[i]._error_pages.end(); ++it) {
 				so[i]._autoResponse[it->first] = Reponse(it->first, so[i]._error_pages[it->first]);
 			}
 		}

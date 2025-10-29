@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+         #
+#    By: ade-rese <ade-rese@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/08/14 15:47:01 by lde-merc          #+#    #+#              #
-#    Updated: 2025/09/30 12:37:16 by lde-merc         ###   ########.fr        #
+#    Updated: 2025/10/28 14:10:31 by ade-rese         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -23,10 +23,10 @@ OBJ_DIR = objs/
 SRC_DIR = srcs/
 DEP		:= $(OBJ:.o=.d)
 
-INVALID_FILE = empty_file.conf wrong_extension.txt
+INVALID_FILE = empty_file.conf wrong_extension.txt no_port.conf no_server_name.conf obscure_data.conf
 
 # Liste des fichiers source
-SRC_FILES = main.cpp Server.cpp Server_parsing.cpp Request.cpp Reponse.cpp Utils.cpp
+SRC_FILES = main.cpp Server.cpp Server_parsing.cpp Request.cpp Reponse.cpp Utils.cpp Client.cpp
 			
 # Transforme chaque fichier source en un fichier objet dans $(OBJ_DIR)
 OBJS = $(addprefix $(OBJ_DIR), $(SRC_FILES:.cpp=.o))
@@ -60,7 +60,7 @@ re: fclean all
 -include $(DEP)
 
 val: all
-	valgrind --leak-check=full --show-leak-kinds=all ./$(NAME) || true
+	valgrind --leak-check=full --show-leak-kinds=all ./$(NAME) conf_file/valid_file/maximal_valid.conf || true
 
 test: all
 	@for file in $(INVALID_FILE); do \
