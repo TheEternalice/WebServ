@@ -6,7 +6,7 @@
 /*   By: ade-rese <ade-rese@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/23 09:28:12 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/10/29 14:47:37 by ade-rese         ###   ########.fr       */
+/*   Updated: 2025/10/29 16:30:41 by ade-rese         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -168,9 +168,12 @@ void Server::lexer_cpp(std::vector<std::string>& tokens, std::ifstream& file) {
 		&Server::extract_location
 	};
 
+	static int c = 0;
 	for (int i = 0; i < 7; i++) {
+		if (tokens[0] == "listen" || tokens[0] == "server_name") c++;
 		if (tokens[0] == instruction[i]) (this->*function[i])(tokens, file);
 	}
+	if (c < 2) throw(std::runtime_error("No listen found or no server_name"));
 }
 
 // START OF the extract 2

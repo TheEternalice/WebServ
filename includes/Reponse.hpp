@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Reponse.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ade-rese <ade-rese@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 12:32:28 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/10/27 15:23:15 by lde-merc         ###   ########.fr       */
+/*   Updated: 2025/10/29 16:35:19 by ade-rese         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,7 +32,6 @@ class Reponse {
 
 		std::string to_string() const;
 
-		static Reponse make_200(const std::string& body, const std::string& type);
 		static Reponse make_500();
 		bool isKeepAlive() const;
 
@@ -51,4 +50,3 @@ class Reponse {
 		std::map<std::string, std::string> _headers;
 		std::string _body;
 };
-
