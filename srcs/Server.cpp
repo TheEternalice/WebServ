@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ade-rese <ade-rese@student.42.fr>          +#+  +:+       +#+        */
+/*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/14 15:47:12 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/10/28 11:07:47 by ade-rese         ###   ########.fr       */
+/*   Updated: 2025/10/29 10:03:53 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -267,7 +267,7 @@ void Server::run() {
 
 				if (cl->outputEmpty()) {
 					if (cl->getReponse().isKeepAlive()) {
-						cl->resetForNextRequest(); // ← ici le point clé
+						cl->resetForNextRequest();
 						_fds[i].events = POLLIN;
 					} else {
 						disconnectClient(fd);
@@ -427,41 +427,47 @@ void Server::removeFdFromPoll(int fd) {
 	}
 }
 
-bool Server::handleFileUpload(const std::string& body, const std::string& contentType, const std::string& uploadDir) {
-	// Extraire le boundary
+bool Server::handleFileUpload(const std::string& body,
+							const std::string& contentType,
+							const std::string& uploadDir)
+{
 	std::string boundaryKey = "boundary=";
 	size_t bpos = contentType.find(boundaryKey);
-	if (bpos == std::string::npos) return false;
+	if (bpos == std::string::npos)
+		return false;
+
 	std::string boundary = "--" + contentType.substr(bpos + boundaryKey.size());
-
 	size_t start = body.find(boundary);
-	if (start == std::string::npos) return false;
+	if (start == std::string::npos)
+		return false;
 
-	// On saute le boundary et les headers de la partie
 	size_t headerEnd = body.find("\r\n\r\n", start);
-	if (headerEnd == std::string::npos) return false;
-	headerEnd += 4; // sauter \r\n\r\n
+	if (headerEnd == std::string::npos)
+		return false;
+	headerEnd += 4;
 
-	// Récupérer le nom du fichier depuis Content-Disposition
 	size_t fnStart = body.find("filename=\"", start);
-	if (fnStart == std::string::npos) return false;
+	if (fnStart == std::string::npos)
+		return false;
 	fnStart += 10;
 	size_t fnEnd = body.find("\"", fnStart);
-	if (fnEnd == std::string::npos) return false;
+	if (fnEnd == std::string::npos)
+		return false;
+
 	std::string filename = body.substr(fnStart, fnEnd - fnStart);
-	
-	// Contenu du fichier
+	if (filename.empty())
+		return false;
+
 	size_t dataEnd = body.find(boundary, headerEnd);
-	if (dataEnd == std::string::npos) return false;
+	if (dataEnd == std::string::npos)
+		return false;
 
-	std::string fileContent = body.substr(headerEnd, dataEnd - headerEnd - 2); // enlever le \r\n avant boundary
-
-	// Écriture sur le disque
+	size_t fileSize = dataEnd - headerEnd - 2;
 	std::ofstream file((uploadDir + "/" + filename).c_str(), std::ios::binary);
-	if (!file.is_open()) return false;
+	if (!file.is_open())
+		return false;
 
-
-	file.write(fileContent.c_str(), fileContent.size());
+	file.write(&body[headerEnd], fileSize);
 	file.close();
 
 	return true;

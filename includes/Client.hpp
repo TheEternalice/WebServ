@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/20 14:17:13 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/10/27 16:07:55 by lde-merc         ###   ########.fr       */
+/*   Updated: 2025/10/29 09:43:15 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,6 +48,8 @@ class Client {
 		Request _request;
 		std::string _buffer_in;
 		std::string _buffer_out;
+		std::vector<char> _raw_buffer;
 		int	_fd;
+		int	_bytes_read;
 		bool _closed;
 };

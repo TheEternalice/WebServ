@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/14 16:26:29 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/09/23 16:04:40 by lde-merc         ###   ########.fr       */
+/*   Updated: 2025/10/29 09:44:04 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,7 @@
 class Request {
 	public:
 		Request();
-		Request(const std::string &request);
+		Request(const std::string &request, size_t bytes_read);
 		~Request();
 		Request(const Request &other);
 		
@@ -41,7 +41,7 @@ class Request {
 		std::string getCookie(const std::string& name) const;
 
 		bool hasHeader(const std::string& buffer) const;
-		void parse(const std::string& buffer);
+		void parse(const std::string &buffer, size_t bytes_read);
 		std::string parseChunked(const std::string& buffer);
 
 		Reponse handle_get();

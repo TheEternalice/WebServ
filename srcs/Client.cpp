@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/20 14:17:07 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/10/27 16:07:17 by lde-merc         ###   ########.fr       */
+/*   Updated: 2025/10/29 10:45:37 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,7 @@ Client &Client::operator=(const Client &other) {
 }
 
 void Client::readFromSocket() {
-	char buffer[4096];
+	char buffer[8192];
 	int bytes_read = recv(_fd, buffer, sizeof(buffer), 0);
 
 	if (bytes_read < 0) {
@@ -43,36 +43,40 @@ void Client::readFromSocket() {
 		_closed = true; // le client a fermé
 		return;
 	}
-
+	_bytes_read += bytes_read;
 	_buffer_in.append(buffer, bytes_read);
+	// On garde une copie exacte des octets recus
+	_raw_buffer.insert(_raw_buffer.end(), buffer, buffer + bytes_read);
 }
 
-// bool Client::tryParseRequest() {
-// 	size_t pos = _buffer_in.find("\r\n\r\n");
-// 	if (pos == std::string::npos)
-// 		return false; // pas encore complet
-// 	_request = Request(_buffer_in);
-// 	_buffer_in.erase(0, pos + 4); // garde ce qui reste
-// 	return true;
-// }
 
 bool Client::tryParseRequest() {
-    if (!_request.hasHeader("Content-Length")) {
-        // Si on a déjà reçu le header, on peut parser
-        if (_buffer_in.find("\r\n\r\n") != std::string::npos) {
-            _request = Request(_buffer_in);
+	size_t headerEnd = _buffer_in.find("\r\n\r\n");
+	if (headerEnd == std::string::npos)
+		return false; // headers pas encore complets
+
+	// Si les headers sont complets, on peut extraire la longueur du corps
+	std::string headersPart = _buffer_in.substr(0, headerEnd);
+	size_t contentLengthPos = headersPart.find("Content-Length:");
+
+	if (contentLengthPos != std::string::npos) {
+		size_t lineEnd = headersPart.find("\r\n", contentLengthPos);
+		std::string value = headersPart.substr(contentLengthPos + 15, lineEnd - (contentLengthPos + 15));
+		int len = to_int(value);
+
+		// Vérifie si tout le corps a été reçu
+		if (_raw_buffer.size() >= headerEnd + 4 + static_cast<size_t>(len)) {
+			_request = Request(std::string(_raw_buffer.begin(), _raw_buffer.end()), this->_bytes_read);
 			return true;
 		}
-    } else {
-        int len = to_int(_request.getHeader("Content-Length"));
-        size_t bodyStart = _buffer_in.find("\r\n\r\n");
-        if (bodyStart != std::string::npos && _buffer_in.size() >= bodyStart + 4 + len) {
-            _request = Request(_buffer_in);
-			return true;
-		}
-    }
-    return false; // pas encore tout reçu
+	} else {
+		// Pas de corps ou petit corps, on peut parser
+		_request = Request(std::string(_raw_buffer.begin(), _raw_buffer.end()), this->_bytes_read);
+		return true;
+	}
+	return false;
 }
+
 
 void Client::writeToSocket() {
 	if (_buffer_out.empty())
@@ -114,6 +118,7 @@ void Client::resetForNextRequest() {
 	_reponse = Reponse();
 	_buffer_in.clear();
 	_buffer_out.clear();
+	_raw_buffer.clear();
 	_closed = false;
 }
 

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gibz <gibz@student.42.fr>                  +#+  +:+       +#+        */
+/*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/14 16:26:26 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/10/28 23:29:24 by gibz             ###   ########.fr       */
+/*   Updated: 2025/10/29 10:44:25 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,8 +18,8 @@ extern char **environ;
 // Constructeur
 Request::Request() {}
 
-Request::Request(const std::string &request) {
-	parse(request);
+Request::Request(const std::string &request, size_t bytes_read) {
+	parse(request, bytes_read);
 }
 
 Request::~Request() {}
@@ -55,127 +55,48 @@ std::map<std::string, std::string> Request::getCookies() const {
 	return _request_cookies;
 }
 
-void Request::parse(const std::string &buffer) {
-	size_t pos = buffer.find("\r\n\r\n");
-	if (pos == std::string::npos)
-		throw std::runtime_error("Invalid HTTP request: missing header/body delimiter");
-
+void Request::parse(const std::string &buffer, size_t bytes_read) {
+	(void)bytes_read;
+	size_t	pos = buffer.find("\r\n\r\n");
+	if (pos == std::string::npos) {
+		throw (std::runtime_error("Invalid HTTP request"));
+	}
+	
 	std::string header = buffer.substr(0, pos);
-	std::string body   = buffer.substr(pos + 4);
-
+	std::string body = buffer.substr(pos + 4);
+	
 	std::istringstream stream(header);
 	std::string line;
-
-	// --- Ligne de requête ---
 	if (!std::getline(stream, line))
-		throw std::runtime_error("Empty HTTP request");
-
-	if (!line.empty() && line[line.size() - 1] == '\r')
-		line.resize(line.size() - 1);
-
+		throw (std::runtime_error("Empty HTTP request"));
+	if (line[line.size() - 1] == '\r') line.resize(line.size() - 1);
 	std::istringstream first_line(line);
 	first_line >> _method >> _url >> _http_version;
-
-	// Supprime les arguments GET (après '?')
 	pos = _url.find('?');
 	if (pos != std::string::npos)
 		_url = _url.substr(0, pos);
 
-	// --- En-têtes ---
 	while (std::getline(stream, line)) {
-		if (!line.empty() && line[line.size() - 1] == '\r')
-			line.resize(line.size() - 1);
-		if (line.empty())
-			break;
-
-		size_t colon = line.find(':');
-		if (colon == std::string::npos)
-			continue;
-
+		if (line[line.size() - 1] == '\r') line.resize(line.size() - 1);
+		if (line.empty()) break;
+		size_t colon = line.find(":");
+		if (colon == std::string::npos) continue;
 		std::string key = line.substr(0, colon);
 		std::string value = line.substr(colon + 1);
-
-		// Trim début/fin (C++98 style)
-		while (!value.empty() && (value[0] == ' ' || value[0] == '\t'))
-			value.erase(0, 1);
-		while (!value.empty() && (value[value.size() - 1] == ' ' || value[value.size() - 1] == '\t'))
-			value.erase(value.size() - 1, 1);
 		_headers[key] = value;
 	}
-
-	// --- Cookies (si tu as déjà la fonction) ---
+	_headers["Connection"] = "keep-alive";
 	parseCookies();
-
-	// --- Corps de la requête ---
 	if (hasHeader("Content-Length")) {
 		int len = to_int(getHeader("Content-Length"));
-		if (len > 0 && body.size() >= static_cast<size_t>(len))
-			_body = body.substr(0, len);
-		else
-			_body = body; // corps partiel ou vide
+		_body = body.substr(0, len);
 	}
-	else if (hasHeader("Transfer-Encoding") &&
-	         getHeader("Transfer-Encoding") == "chunked") {
+	else if (hasHeader("Transfer-Encoding") && getHeader("Transfer-Encoding") == "chunked") {
 		_body = parseChunked(body);
-	}
-	else {
+	}else {
 		_body = body;
 	}
-
-	// --- (Nouveau) Détection d’un multipart/form-data ---
-	// if (hasHeader("Content-Type") &&
-	// 	getHeader("Content-Type").find("multipart/form-data") != std::string::npos) {
-	// 	std::cout << "[INFO] Multipart upload detected" << std::endl;
-	// }
 }
-
-
-
-// void Request::parse(const std::string &buffer) {
-// 	size_t	pos = buffer.rfind("\r\n\r\n");
-// 	if (pos == std::string::npos) {
-// 		throw (std::runtime_error("Invalid HTTP request"));
-// 	}
-// 	std::cout << "parse, Request.cpp\n";
-// 	std::cout << "buffer_in = " << buffer << std::endl;
-	
-// 	std::string header = buffer.substr(0, pos);
-// 	std::string body = buffer.substr(pos + 4);
-	
-// 	std::istringstream stream(header);
-// 	std::string line;
-// 	if (!std::getline(stream, line))
-// 		throw (std::runtime_error("Empty HTTP request"));
-// 	if (line[line.size() - 1] == '\r') line.resize(line.size() - 1);
-// 	std::istringstream first_line(line);
-// 	first_line >> _method >> _url >> _http_version;
-// 	pos = _url.find('?');
-// 	if (pos != std::string::npos)
-// 		_url = _url.substr(0, pos);
-
-// 	while (std::getline(stream, line)) {
-// 		if (line[line.size() - 1] == '\r') line.resize(line.size() - 1);
-// 		if (line.empty()) break;
-// 		size_t colon = line.find(":");
-// 		if (colon == std::string::npos) continue;
-// 		std::string key = line.substr(0, colon);
-// 		std::string value = line.substr(colon + 1);
-// 		std::cout << "key = " << key << std::endl;
-// 		std::cout << "value = " << value << std::endl;
-// 		_headers[key] = value;
-// 	}
-// 	_headers["Connection"] = "keep-alive";
-// 	parseCookies();
-// 	if (hasHeader("Content-Length")) {
-// 		int len = to_int(getHeader("Content-Length"));
-// 		_body = body.substr(0, len);
-// 	}
-// 	else if (hasHeader("Transfer-Encoding") && getHeader("Transfer-Encoding") == "chunked") {
-// 		_body = parseChunked(body);
-// 	}else {
-// 		_body = body;
-// 	}
-// }
 
 bool Request::hasHeader(const std::string &buffer) const {return (_headers.find(buffer) != _headers.end());}
 
