@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ade-rese <ade-rese@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/14 16:26:26 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/10/29 10:44:25 by lde-merc         ###   ########.fr       */
+/*   Updated: 2025/10/29 14:42:15 by ade-rese         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,6 @@
 #include <cstring>
 extern char **environ;
 
-// Constructeur
 Request::Request() {}
 
 Request::Request(const std::string &request, size_t bytes_read) {
@@ -43,6 +42,7 @@ Request &Request::operator=(const Request& other) {
 std::string Request::get_method() const {
 	return _method;
 }
+
 std::string Request::get_url() const {
 	return _url;
 }
@@ -152,9 +152,9 @@ void Request::parseCookies() {
 
 // Handle GET request
 /**********************************************
- * Ouvre le fichier demandé
- * Si le fichier est un script CGI, l'exécute
- * Sinon retourne le fichier avec 200
+ * Open the asked file
+ * if the file is a CGI script and execute it
+ * Else if return the file with code 200
  **********************************************/
 Reponse Request::handle_get() {
 	try {
@@ -168,13 +168,12 @@ Reponse Request::handle_get() {
 
 Reponse Request::execute_cgi_get(std::string& url) {
 	std::string path = "." + url;
-	
-	// Check si le fichier est executable
+
 	if (access(path.c_str(), X_OK) != 0 || url == "/") {
 		throw std::runtime_error("");
 	}
 	
-	// Execute le script CGI
+	// Execute the CGI script
 	int pipe_fd[2];
 	pipe(pipe_fd);
 	pid_t pid = fork();
@@ -190,6 +189,7 @@ Reponse Request::execute_cgi_get(std::string& url) {
 		std::string request_method = "REQUEST_METHOD=GET";
 		std::string path_env = "PATH=/usr/bin:/bin";
 		
+		// take the header cookie and change it into a vector in the server
 		std::string cookies_header = getHeader("Cookie");
 		std::string cookie_env;
 		if (!cookies_header.empty()) {
@@ -250,11 +250,11 @@ Reponse Request::execute_cgi_get(std::string& url) {
 				}
 			}
 		} else {
-			content = body; // pas d’en-têtes CGI, tout est du body
+			content = body; // no CGI header, everything in the body
 		}
 
 
-		// --- construction de la réponse HTTP ---
+		// --- construction of the HTTP reponse ---
 		r.set_status_code(200);
 		r.set_status_text("OK");
 		r.set_body(content);
@@ -262,7 +262,7 @@ Reponse Request::execute_cgi_get(std::string& url) {
 		if (headers.find("Content-Type") != headers.end())
 			r.set_header("Content-Type", headers["Content-Type"]);
 		else
-			r.set_header("Content-Type", "text/plain"); // default, affiche a l'ecran
+			r.set_header("Content-Type", "text/plain");
 
 		std::ostringstream oss_len;
 		oss_len << content.size();
@@ -275,20 +275,20 @@ Reponse Request::execute_cgi_get(std::string& url) {
 
 // Handle POST request
 /*******************************************************
- * Ajoute de la donnee au fichier demandé
- * Interprete la request
-	Existence et droit d'ecriture par le client
- * Retourne 200 si ok
- * Retourne 403 si pas le droit
- * Retourne 500 si erreur serveur
+ * Add some data to the asked file
+ * Interpret the request
+ * Existence and permission to read per client
+ * Return 200 if ok
+ * Return 403 if no permissions
+ * Return 500 if server error
 ********************************************************/
 Reponse Request::handle_post() {
 	std::string path = "." + _url;
 	
-	// Check si le fichier est ecrivable
+	// Check if the file is writable
 	if (access(path.c_str(), W_OK) != 0) {
 		Reponse r;
-		r.set_status_code(403); // Pas le droit d'ecriture
+		r.set_status_code(403); // No permission to write
 		r.set_status_text("No Write Permission");
 		r.set_body("403 No Write Permission");
 		r.set_header("Content-Type", "text/plain");
@@ -299,7 +299,7 @@ Reponse Request::handle_post() {
 	}
 	
 	Reponse r;
-	r = execute_cgi_post(_url, _body); // On passe le body au CGI
+	r = execute_cgi_post(_url, _body); // give the body to the CGI
 	if (r.get_status_code() == -1) {
 		std::ofstream out(path.c_str(), std::ios::binary);
 		out << _body;
@@ -315,7 +315,7 @@ Reponse Request::handle_post() {
 	return r;
 }
 
-// Execute une cgi, on passe le body en STDIN au script
+// Execute a CGI, and give the body by STDIN to the script
 Reponse Request::execute_cgi_post(std::string& url, std::string& body) {
 	std::string path = "." + url;
 	if (access(path.c_str(), X_OK) != 0) {
@@ -341,7 +341,7 @@ Reponse Request::execute_cgi_post(std::string& url, std::string& body) {
 		return r;
 	}
 	if (pid == 0) {
-		// Fils : redirige stdin, stdout, stderr
+		// Child : redirect stdin, stdout, stderr
 		close(pipe_in[1]);
 		dup2(pipe_in[0], STDIN_FILENO);
 		close(pipe_in[0]);
@@ -350,7 +350,7 @@ Reponse Request::execute_cgi_post(std::string& url, std::string& body) {
 		dup2(pipe_out[1], STDERR_FILENO);
 		close(pipe_out[1]);
 
-		// Prépare l'environnement
+		// Prepare the environnement
 		std::vector<std::string> env_vec;
 		for (char **env = environ; *env != 0; env++) {
 			env_vec.push_back(std::string(*env));
@@ -390,7 +390,7 @@ Reponse Request::execute_cgi_post(std::string& url, std::string& body) {
 		delete[] envp;
 		exit(1);
 	} else {
-		// Parent : écrit le body, lit la sortie
+		// Parent : write the body, read the output
 		close(pipe_in[0]);
 		ssize_t written = 0;
 		while (written < (ssize_t)body.size()) {
@@ -452,20 +452,21 @@ Reponse Request::execute_cgi_post(std::string& url, std::string& body) {
 
 // Handle DELETE request
 /*******************************************************
- * Equivalent du rm fichier mais pour le client
- * Interprete la request
-	 Existence et droit de supprimer par le client avec unlink()
-	* Retourne 200 si ok
-	* Retourne 403 si c'est un repertoire
-	* Retourne 500 si erreur serveur
+ * Equivalent of rm file but for the client
+ * Interpret the request
+	 Existence and permission of delete by
+	 	the client with unlink()
+	* Return 200 if ok
+	* Return 403 if it's a directory
+	* Return 500 if server error
 *******************************************************/
 Reponse Request::handle_delete() {
 	std::string path = "." + _url;
 	
-	// Check si le fichier est ecrivable
+	// Check if the file is writable
 	if (access(path.c_str(), W_OK) != 0) {
 		Reponse r;
-		r.set_status_code(403); // Pas le droit d'ecriture
+		r.set_status_code(403);
 		r.set_status_text("No Write Permission");
 		r.set_body("<p style='color:red;'>403 No Write Permission</p>");
 		r.set_header("Content-Type", "text/plain");
@@ -475,7 +476,7 @@ Reponse Request::handle_delete() {
 		return r;
 	}
 	
-	// Supprime le fichier
+	// Delete the file
 	if (unlink(path.c_str()) != 0) {
 		Reponse r;
 		r.set_status_code(500);

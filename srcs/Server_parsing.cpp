@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server_parsing.cpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ade-rese <ade-rese@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/23 09:28:12 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/10/22 10:28:51 by lde-merc         ###   ########.fr       */
+/*   Updated: 2025/10/29 14:47:37 by ade-rese         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,7 +66,7 @@ void Server::parsing(std::string name) {
 }
 
 
-// DEBUT DE l'extract 1
+// START OF the extract 1
 
 void Server::extract_listen(std::vector<std::string>& tokens, std::ifstream& file) {
 	if (tokens.size() < 2 || !file)
@@ -173,7 +173,7 @@ void Server::lexer_cpp(std::vector<std::string>& tokens, std::ifstream& file) {
 	}
 }
 
-// DEBUT DE l'EXTRACT 2
+// START OF the extract 2
 void Server::location_root(std::vector<std::string> tokens) {
 	if (tokens.size() < 2)
 		return ;

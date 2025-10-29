@@ -3,17 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   Reponse.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ade-rese <ade-rese@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 12:32:35 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/10/27 10:13:30 by lde-merc         ###   ########.fr       */
+/*   Updated: 2025/10/29 14:46:37 by ade-rese         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/Reponse.hpp"
 #include "../includes/Server.hpp"
 
-// Constructeur
 Reponse::Reponse() {}
 
 Reponse::Reponse(std::string url) {
@@ -93,7 +92,6 @@ Reponse::Reponse(const Reponse &other) {
 
 Reponse &Reponse::operator=(const Reponse &other) {
 	if (this != &other) {
-		// copy attributes here
 		this->_status_code = other._status_code;
 		this->_status_text = other._status_text;
 		this->_headers = other._headers;
@@ -151,7 +149,6 @@ void Reponse::set_header(const std::string& key, const std::string& value) {
 	_headers[key] = value;
 }
 
-
 static std::string toLower(const std::string &s) {
 	std::string out = s;
 	for (size_t i = 0; i < out.size(); ++i) out[i] = static_cast<char>(std::tolower(out[i]));
@@ -159,7 +156,7 @@ static std::string toLower(const std::string &s) {
 }
 
 bool Reponse::isKeepAlive() const {
-	// Cherche header "Connection" en ignorant la casse
+	// Search header "Connection" by ignoring failures
 	std::map<std::string, std::string>::const_iterator it;
 	for (it = _headers.begin(); it != _headers.end(); ++it) {
 		if (toLower(it->first) == "connection") {

@@ -3,16 +3,15 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ade-rese <ade-rese@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/20 14:17:07 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/10/29 10:45:37 by lde-merc         ###   ########.fr       */
+/*   Updated: 2025/10/29 14:45:11 by ade-rese         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/Client.hpp"
 
-// Constructeur
 Client::Client() { }
 
 Client::~Client() { }
@@ -24,9 +23,7 @@ Client::Client(const Client &other) {
 Client::Client(int fd): _fd(fd) { }
 
 Client &Client::operator=(const Client &other) {
-    if (this != &other) {
-        // copy attributes here
-    }
+    if (this != &other) {}
     return *this;
 }
 
@@ -36,16 +33,16 @@ void Client::readFromSocket() {
 
 	if (bytes_read < 0) {
 		if (errno == EAGAIN || errno == EWOULDBLOCK)
-			return; // rien de nouveau
+			return;
 		throw std::runtime_error("recv() failed");
 	}
 	if (bytes_read == 0) {
-		_closed = true; // le client a fermé
+		_closed = true; // client close
 		return;
 	}
 	_bytes_read += bytes_read;
 	_buffer_in.append(buffer, bytes_read);
-	// On garde une copie exacte des octets recus
+	// We save a perfect copy of the recieved octets
 	_raw_buffer.insert(_raw_buffer.end(), buffer, buffer + bytes_read);
 }
 
@@ -53,9 +50,9 @@ void Client::readFromSocket() {
 bool Client::tryParseRequest() {
 	size_t headerEnd = _buffer_in.find("\r\n\r\n");
 	if (headerEnd == std::string::npos)
-		return false; // headers pas encore complets
+		return false;
 
-	// Si les headers sont complets, on peut extraire la longueur du corps
+	// if headers are complete, we can extract the body length
 	std::string headersPart = _buffer_in.substr(0, headerEnd);
 	size_t contentLengthPos = headersPart.find("Content-Length:");
 
@@ -64,13 +61,13 @@ bool Client::tryParseRequest() {
 		std::string value = headersPart.substr(contentLengthPos + 15, lineEnd - (contentLengthPos + 15));
 		int len = to_int(value);
 
-		// Vérifie si tout le corps a été reçu
+		// Check if the body is recieved
 		if (_raw_buffer.size() >= headerEnd + 4 + static_cast<size_t>(len)) {
 			_request = Request(std::string(_raw_buffer.begin(), _raw_buffer.end()), this->_bytes_read);
 			return true;
 		}
 	} else {
-		// Pas de corps ou petit corps, on peut parser
+		// No body or small one, we can parse
 		_request = Request(std::string(_raw_buffer.begin(), _raw_buffer.end()), this->_bytes_read);
 		return true;
 	}

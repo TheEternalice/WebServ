@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ade-rese <ade-rese@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/14 15:47:12 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/10/29 10:03:53 by lde-merc         ###   ########.fr       */
+/*   Updated: 2025/10/29 14:22:19 by ade-rese         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,6 @@
 volatile bool g_running(true);
 Server* g_server = NULL;
 
-// std::map<int, Reponse> Server::_static_responses;
 std::map<std::string, std::string> Server::_extensionsToType;
 
 void handle_sigint(int signum) {
@@ -29,15 +28,15 @@ void Server::cleanup() {
 
 	for (size_t i = 0; i < _fds.size(); ++i) {
 		int fd = _fds[i].fd;
-		// Si ce n’est pas un socket serveur
+		// if it's not a server socket
 		if (!isServerSocket(fd)) {
 			std::map<int, Client*>::iterator it = _socketToClient.find(fd);
 			if (it != _socketToClient.end()) {
 				if (it->second) {
-					delete it->second; // libère le client
+					delete it->second; // free the client
 					it->second = NULL;
 				}
-				close(fd); // ferme le descripteur
+				close(fd);
 			}
 		} else {
 			close(fd);
@@ -48,8 +47,6 @@ void Server::cleanup() {
 	std::cout << "Serveur arrêté proprement." << std::endl;
 }
 
-
-// Constructeur
 Server::Server() {
 	std::ifstream file("mime.types");
 	if (!file.is_open())
@@ -57,7 +54,7 @@ Server::Server() {
 
 	std::string line;
 	while (std::getline(file, line)) {
-		// Ignore comments et lignes vides
+		// Ignore comments and empty lines
 		if (line.empty() || line[0] == '#')
 			continue;
 
@@ -69,7 +66,7 @@ Server::Server() {
 		std::string ext;
 		while (iss >> ext) {
 			if (ext[0] != '.')
-				ext = "." + ext; // normaliser avec un point
+				ext = "." + ext; // normalize with a dot
 			_extensionsToType[ext] = mime_type;
 		}
 	}
@@ -82,7 +79,6 @@ Server::Server(const Server &other) { *this = other; }
 
 Server &Server::operator=(const Server &other) {
 	if (this != &other) {
-		// copy attributes here
 		_fds = other._fds;
 		_sockets = other._sockets;
 		_extensionsToType = other._extensionsToType;
@@ -101,12 +97,6 @@ std::vector<ServerSocket> Server::get_Socket() {
 void Server::display_Serv() {
 	std::string msg = "";
 	for (size_t i = 0; i < _sockets.size(); i++){
-		// std::cout << "------- Server " << i + 1 << " -------" << std::endl;
-		// std::cout << "Host-> ";
-		// if (!_sockets[i]._host.empty())
-		// 	std::cout << _sockets[i]._host << std::endl;
-		// else
-		// 	msg = "No host found";
 		std::cout << "Port-> ";
 		if (_sockets[i]._port)
 			std::cout << _sockets[i]._port << std::endl;
@@ -117,47 +107,6 @@ void Server::display_Serv() {
 			std::cout << _sockets[i]._server_name << std::endl;
 		else
 			msg = "No server name found";
-		// std::cout << "Error pages : " << std::endl;
-		// if (!_sockets[i]._error_pages.empty()) {
-		// 	for (size_t j = 0; j < 600; j++){
-		// 		if (_sockets[i]._error_pages[j] != "")
-		// 			std::cout << "   _ " << _sockets[i]._error_pages[j] << std::endl;
-		// 	}
-		// }
-		// std::cout << std::endl;
-		// std::cout << "Max body size : ";
-		// if (!_sockets[i]._max_body_size)
-		// 	std::cout << _sockets[i]._max_body_size << std::endl;
-		// std::cout << "Path : ";
-		// if (!_sockets[i]._path.empty())
-		// 	std::cout << _sockets[i]._path << std::endl;
-		// std::cout << "Index : ";
-		// if (!_sockets[i]._index.empty())
-		// 	std::cout << _sockets[i]._index << std::endl;
-		// std::cout << "Root : ";
-		// if (!_sockets[i]._root.empty())
-		// 	std::cout << _sockets[i]._root << std::endl;
-		// std::cout << "Auto index : ";
-		// if (_sockets[i]._autoIndex)
-		// 	std::cout << _sockets[i]._autoIndex << std::endl;
-		// std::cout << "Allowed Methods :" << std::endl;
-		// if (!_sockets[i]._allowedMethods.empty()) {
-		// 	std::map<std::string, int>::const_iterator it;
-		// 	for (it = _sockets[i]._allowedMethods.begin(); it != _sockets[i]._allowedMethods.end(); ++it) {
-		// 		std::cout << "  " << it->first << " : " << it->second << std::endl;
-		// 	}
-		// }
-		// std::cout << std::endl << "CGI Extensions : " << std::endl;
-		// if (!_sockets[i]._cgiExtensions.empty()) {
-		// 	for (size_t l = 0; l < _sockets[i]._cgiExtensions.size(); l++)
-		// 		std::cout << "   " << l << " : " << _sockets[i]._cgiExtensions[l] << std::endl;
-		// }
-		// std::cout << "Path : " << std::endl;
-		// if (!_sockets[i]._returnPath.empty())
-		// 	std::cout << _sockets[i]._returnPath << std::endl;
-		// std::cout << "Upload dir : " << std::endl;
-		// if (!_sockets[i]._upload_dir.empty())
-		// 	std::cout << _sockets[i]._upload_dir << std::endl;
 		std::cout << "------------------------" << std::endl;
 		if (!msg.empty())
 			throw(std::runtime_error(msg));
@@ -292,13 +241,13 @@ void Server::accept_client(int fd) {
 	int client_fd = accept(fd, (struct sockaddr *)&client_addr, &client_len);
 	if (client_fd < 0) {
 		if (errno == EAGAIN || errno == EWOULDBLOCK)
-			return; // Rien à accepter
+			return; // Nothing to accept
 		std::cerr << "accept() failed on fd " << fd << ": "
 				  << strerror(errno) << std::endl;
 		return;
 	}
 
-	// Rend le client non bloquant
+	// make the client non-blocking
 	int flags = fcntl(client_fd, F_GETFL, 0);
 	if (flags == -1 || fcntl(client_fd, F_SETFL, flags | O_NONBLOCK) == -1) {
 		std::cerr << "fcntl() failed: " << strerror(errno) << std::endl;
@@ -308,7 +257,7 @@ void Server::accept_client(int fd) {
 
 	ServerSocket &server = _listeningSockets[fd];
 
-    // Créer un nouveau client et lier au serveur
+    // create a new client and link it to the server
     Client* client = new Client(client_fd);
     _socketToClient[client_fd] = client;
     _clientToSocket[client_fd] = server;
@@ -320,15 +269,12 @@ void Server::accept_client(int fd) {
     }
 
 
-	// Ajouter à poll()
+	// add to poll()
 	struct pollfd pfd;
 	pfd.fd = client_fd;
 	pfd.events = POLLIN;
 	pfd.revents = 0;
 	_fds.push_back(pfd);
-
-	// std::cout << "New client connected on port " << server._port
-	// 		  << " (fd=" << client_fd << ")" << std::endl;
 }
 
 void Server::handle_request(Client &client) {
@@ -377,7 +323,6 @@ void Server::handle_request(Client &client) {
 
 }
 
-// C'est l'idee qui compte !
 bool Server::is_method_allowed(const std::string &method, Client &client) {
 	ServerSocket *server = &_clientToSocket[client.get_fd()];
 	int nummethode = 0;
