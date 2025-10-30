@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ade-rese <ade-rese@student.42.fr>          +#+  +:+       +#+        */
+/*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/14 16:26:26 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/10/29 14:42:15 by ade-rese         ###   ########.fr       */
+/*   Updated: 2025/10/30 15:04:13 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -179,7 +179,7 @@ Reponse Request::execute_cgi_get(std::string& url) {
 	pid_t pid = fork();
 	Reponse r;
 	if (pid < 0) {
-		r = Reponse::make_500();
+		r.set_status_code(500);
 		return r;
 	} else if (pid == 0) {
 		close(pipe_fd[0]);
@@ -289,12 +289,6 @@ Reponse Request::handle_post() {
 	if (access(path.c_str(), W_OK) != 0) {
 		Reponse r;
 		r.set_status_code(403); // No permission to write
-		r.set_status_text("No Write Permission");
-		r.set_body("403 No Write Permission");
-		r.set_header("Content-Type", "text/plain");
-		std::ostringstream oss_len;
-		oss_len << r.get_body().size();
-		r.set_header("Content-Length", oss_len.str());
 		return r;
 	}
 	
@@ -467,12 +461,6 @@ Reponse Request::handle_delete() {
 	if (access(path.c_str(), W_OK) != 0) {
 		Reponse r;
 		r.set_status_code(403);
-		r.set_status_text("No Write Permission");
-		r.set_body("<p style='color:red;'>403 No Write Permission</p>");
-		r.set_header("Content-Type", "text/plain");
-		std::ostringstream oss_len;
-		oss_len << r.get_body().size();
-		r.set_header("Content-Length", oss_len.str());
 		return r;
 	}
 	
@@ -480,12 +468,6 @@ Reponse Request::handle_delete() {
 	if (unlink(path.c_str()) != 0) {
 		Reponse r;
 		r.set_status_code(500);
-		r.set_status_text("Internal Server Error");
-		r.set_body("500 Internal Server Error");
-		r.set_header("Content-Type", "text/plain");
-		std::ostringstream oss_len;
-		oss_len << r.get_body().size();
-		r.set_header("Content-Length", oss_len.str());
 		return r;
 	}
 
