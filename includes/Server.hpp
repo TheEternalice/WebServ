@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ade-rese <ade-rese@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/14 15:47:19 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/10/27 15:21:27 by lde-merc         ###   ########.fr       */
+/*   Updated: 2025/10/29 16:36:46 by ade-rese         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,7 +49,7 @@ struct ServerSocket {
 	struct sockaddr_in address;
 	socklen_t _addrlen;
 	
-	std::map<std::string, int> _allowedMethods; // location et methodes en bit
+	std::map<std::string, int> _allowedMethods; // location and methods in bit
 	std::vector<std::string> _cgiExtensions;
 	std::map<int, Reponse> _autoResponse;
 };
@@ -107,12 +107,9 @@ class Server {
 		 ******************/
 		void init();
 		void run();
-		// void accept_client(ServerSocket &s);
 		void accept_client(int fd);
-		// void handle_request(int i);
 		void handle_request(Client& client);
 		bool handleFileUpload(const std::string& body, const std::string& contentType, const std::string& uploadDir);
-		// bool is_method_allowed(const std::string &method);
 		bool is_method_allowed(const std::string &method, Client &client);
 		
 		static std::string get_content_type(const std::string& path);
@@ -125,7 +122,6 @@ class Server {
 		void cleanup();
 
 	private:
-		// static std::map<int, Reponse> _static_responses;
 	
 		std::vector<struct pollfd> 					_fds;
 		std::vector<ServerSocket> 					_sockets;
