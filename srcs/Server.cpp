@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/14 15:47:12 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/10/30 15:05:31 by lde-merc         ###   ########.fr       */
+/*   Updated: 2025/10/31 14:02:56 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -287,7 +287,7 @@ void Server::handle_request(Client &client) {
 		} else if (method == "GET") {
 			res = client.getRequest().handle_get();
 			if (res.get_status_code() == 500)
-				res = _clientToSocket[client.get_fd()]._autoResponse[500];
+				res = server->_autoResponse[500];
 		} else if (method == "POST") {
 			Request req = client.getRequest();
 			ServerSocket socket = _clientToSocket[client.get_fd()];
@@ -301,20 +301,22 @@ void Server::handle_request(Client &client) {
 					std::ostringstream oss_len;
 					oss_len << boby.size();
 					res.set_header("Content-Length", oss_len.str());
+				} else {
+					throw(std::runtime_error(""));
 				}
 			}else {
 				res = client.getRequest().handle_post();
 				if(res.get_status_code() == 500)
-					res = _clientToSocket[client.get_fd()]._autoResponse[500];
+					res = server->_autoResponse[500];
 				if(res.get_status_code() == 403)
-					res = _clientToSocket[client.get_fd()]._autoResponse[403];
+					res = server->_autoResponse[403];
 			}
 		}else if (method == "DELETE") {
 			res = client.getRequest().handle_delete();
 			if (res.get_status_code() == 500)
-				res = _clientToSocket[client.get_fd()]._autoResponse[500];
+				res = server->_autoResponse[500];
 			if (res.get_status_code() == 403)
-				res = _clientToSocket[client.get_fd()]._autoResponse[403];
+				res = server->_autoResponse[403];
 		} else {
 			res = server->_autoResponse[400];
 		}
