@@ -1,29 +1,19 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   File.hpp                                           :+:      :+:    :+:   */
+/*   Utils.hpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/08/14 15:59:04 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/08/14 16:40:06 by lde-merc         ###   ########.fr       */
+/*   Created: 2025/08/25 01:14:48 by gebz              #+#    #+#             */
+/*   Updated: 2025/10/22 11:14:33 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
-#include <string>
+#include <vector>
 
-class File {
-	public:
-		File();
-		File(char *argv);
-		~File();
-		File(const File &other);
-		
-		File &operator=(const File &other);
-
-	private:
-		std::string _name;
-		char **_oss;
-};
+std::string trim(const std::string& str);
+std::vector<std::string> cpp_split(const std::string& line, char c);
+int to_int(const std::string& s);
