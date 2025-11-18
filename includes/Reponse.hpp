@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Reponse.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ade-rese <ade-rese@student.42.fr>          +#+  +:+       +#+        */
+/*   By: gpichon <gpichon@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 12:32:28 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/10/29 16:35:19 by ade-rese         ###   ########.fr       */
+/*   Updated: 2025/11/18 13:08:51 by gpichon          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,11 +23,11 @@
 class Reponse {
 	public:
 		Reponse();
-		Reponse(std::string url);
+		Reponse(std::string url,std::string root, std::string index, std::string locationPath);
 		Reponse(int num, std::string path);
 		~Reponse();
 		Reponse(const Reponse &other);
-		
+
 		Reponse &operator=(const Reponse &other);
 
 		std::string to_string() const;
@@ -38,7 +38,7 @@ class Reponse {
 		int get_status_code() const;
 		std::string get_body() const;
 		std::map<std::string, std::string> get_header() const;
-		
+
 		void set_status_code(int code);
 		void set_status_text(const std::string& text);
 		void set_body(const std::string& body);

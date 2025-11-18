@@ -6,7 +6,7 @@
 /*   By: gpichon <gpichon@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/14 15:47:19 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/11/13 13:34:04 by gpichon          ###   ########.fr       */
+/*   Updated: 2025/11/18 13:13:26 by gpichon          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,15 +36,20 @@ struct ServerSocket {
 
 	std::string _host;
 	std::string _server_name;
-	std::map<int, std::string> _error_pages;
-	std::map<std::string, int> _returnCodes;
 	size_t _max_body_size;
 	std::string _root;
 	std::string _path;
 	std::string _index;
 	std::string _returnPath;
+	int 		_returnCode;
 	std::string _upload_dir;
-	std::string _alias;
+
+	std::map<int, std::string> _error_pages;
+	std::map<std::string, int> _returnCodes;
+	std::map<std::string, std::string> _returnPaths;
+	std::map<std::string, std::string> _locationRoots;
+	std::map<std::string, std::string> _locationIndexes;
+	std::map<std::string, size_t> _locationMaxBodySizes;
 
 	int returnCode;
 	bool _autoIndex;

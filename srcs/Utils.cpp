@@ -25,7 +25,7 @@ std::string trim(const std::string& str) {
 std::vector<std::string> cpp_split(const std::string& line, char c) {
 	std::vector<std::string> sentence;
 	size_t start = 0;
-	size_t end = line.find_first_of(c);;
+	size_t end = line.find_first_of(c);
 	
 	while (end != std::string::npos){
 		if (end != start)
@@ -33,8 +33,8 @@ std::vector<std::string> cpp_split(const std::string& line, char c) {
 		start = end + 1;
 		end = line.find_first_of(c, start);
 	}
-	if (start < std::string::npos)
-			sentence.push_back(line.substr(start, end - start));
+	if (start < line.length())
+		sentence.push_back(line.substr(start));
 	int i = 0;
 	while (i < static_cast<int>(sentence.size())){
 		sentence[i] = trim(sentence[i]);

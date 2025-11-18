@@ -6,7 +6,7 @@
 /*   By: gpichon <gpichon@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/23 09:28:12 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/11/13 13:33:46 by gpichon          ###   ########.fr       */
+/*   Updated: 2025/11/18 13:30:33 by gpichon          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,6 +40,8 @@ void Server::parsing_serv(std::ifstream& file) {
 	}
 }
 
+// segfault surement ici, dernier changement le bodysize
+
 void Server::parsing(std::string name) {
 	std::ifstream file(name.c_str());
 	if (!file.is_open()){
@@ -57,21 +59,20 @@ void Server::parsing(std::string name) {
 		if (line == "server {") {
 			ServerSocket serv;
 			serv.fd = -1;
-			serv._root = "/";
 			serv._port = 0;
 			serv._max_body_size = 0;
 			serv._autoIndex = false;
+			serv._returnCode = 0;
 			serv._host = "";
-			serv.returnCode = 0;
 			serv._server_name = "";
 			serv._path = "";
+			serv._index = "";
 			serv._root = "";
 			serv._returnPath = "";
 			serv._upload_dir = "";
-			serv._alias = "";
-			memset(&serv.address, 0, sizeof(serv.address));
-			serv._addrlen = 0;
 			serv._allowedMethods["/"] = 0;
+			memset(&serv.address, 0, sizeof(serv.address));
+			serv._addrlen = sizeof(serv.address);
 			_sockets.push_back(serv);
 			parsing_serv(file);
 		}
@@ -203,6 +204,9 @@ void Server::location_root(std::vector<std::string> tokens) {
 		root = root.substr(0, root.length() - 1);
 	}
 
+	std::string currentLocation = _sockets.back()._path;
+	if (!currentLocation.empty())
+		_sockets.back()._locationRoots[currentLocation] = root;
 	_sockets.back()._root = root;
 }
 
@@ -210,22 +214,21 @@ void Server::location_methods(std::vector<std::string> tokens){
 	if (tokens.size() < 2)
 		return ;
 
+	std::string currentLocation = _sockets.back()._path;
+	if (currentLocation.empty())
+		return;
+	_sockets.back()._allowedMethods[currentLocation] = 0;
 	for (size_t i = 1; i < tokens.size(); i++){
 		std::string method = tokens[i];
 		if (!method.empty() && method[method.length() - 1] == ';'){
 			method = method.substr(0, method.length() - 1);
 		}
-		switch (method[0]) {
-			case 'G':
-				_sockets.back()._allowedMethods[_sockets.back()._path] += 1;
-				break;
-			case 'P':
-				_sockets.back()._allowedMethods[_sockets.back()._path] += 2;
-				break;
-			case 'D':
-				_sockets.back()._allowedMethods[_sockets.back()._path] += 4;
-				break;
-		}
+		if (method == "GET")
+				_sockets.back()._allowedMethods[currentLocation] += 1;
+		else if (method == "POST")
+				_sockets.back()._allowedMethods[currentLocation] += 2;
+		else if (method == "DELETE")
+				_sockets.back()._allowedMethods[currentLocation] += 4;
 	}
 }
 
@@ -234,13 +237,29 @@ void Server::location_return(std::vector<std::string> tokens){
 	if (tokens.size() < 2)
 		return ;
 
+	int code = 301;
 	std::string path;
-	path = tokens[1];
+
+	if (tokens.size() >= 3) {
+		code = atoi(tokens[1].c_str());
+		if (code == 0)
+			code = 301;
+		path = tokens[2];
+	} else {
+		path = tokens[1];
+	}
+
 	if (!path.empty() && path[path.length() - 1] == ';'){
 		path = path.substr(0, path.length() - 1);
 	}
 
+	std::string currentLocation = _sockets.back()._path;
+	if (!currentLocation.empty()) {
+		_sockets.back()._returnPaths[currentLocation] = path;
+		_sockets.back()._returnCodes[currentLocation] = code;
+	}
 	_sockets.back()._returnPath = path;
+	_sockets.back()._returnCode = code;
 }
 
 void Server::location_cgi(std::vector<std::string> tokens) {
@@ -277,6 +296,9 @@ void Server::location_index(std::vector<std::string> tokens){
 		index = index.substr(0, index.length() - 1);
 	}
 
+	std::string currentLocation = _sockets.back()._path;
+	if (!currentLocation.empty())
+		_sockets.back()._locationIndexes[currentLocation] = index;
 	_sockets.back()._index = index;
 }
 
@@ -289,6 +311,10 @@ void Server::location_max_size(std::vector<std::string> tokens){
 		value = value.substr(0, value.length() - 1);
 	}
 
+	std::string currentLocation = _sockets.back()._path;
+	if (!currentLocation.empty()) {
+		_sockets.back()._locationMaxBodySizes[currentLocation] = static_cast<size_t>(atoi(value.c_str()));
+	}
 	_sockets.back()._max_body_size = atoi(value.c_str());
 }
 

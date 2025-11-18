@@ -6,7 +6,7 @@
 /*   By: gpichon <gpichon@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/14 15:47:12 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/11/13 13:31:19 by gpichon          ###   ########.fr       */
+/*   Updated: 2025/11/18 13:46:15 by gpichon          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -106,15 +106,10 @@ void Server::display_Serv() {
 		if (!_sockets[i]._server_name.empty())
 			std::cout << _sockets[i]._server_name << std::endl;
 		else
-		{
-			static int sn = 1;
-			_sockets[i]._server_name = "default_name";
-			std::cout << _sockets[i]._server_name << sn++ << std::endl;
-			std::cout << "BE CAREFULL !!! default name taken" << std::endl;
-		}
+			msg = "No server name found";
 		std::cout << "------------------------" << std::endl;
 		if (!msg.empty())
-			std::cout << msg << std::endl;
+			throw(std::runtime_error(msg));
 	}
 }
 
@@ -286,11 +281,106 @@ void Server::handle_request(Client &client) {
 	const std::string method = client.getRequest().get_method();
 	Reponse res;
 	ServerSocket* server = &_clientToSocket[client.get_fd()];
+
 	try {
+		std::string url = client.getRequest().get_url();
+		std::string locationPath = "/";
+		size_t bestLen = 0;
+		for (std::map<std::string, int>::const_iterator it = server->_allowedMethods.begin(); it != server->_allowedMethods.end(); ++it) {
+			const std::string &loc = it->first;
+			if (loc.empty()) continue;
+			if (url.size() >= loc.size() && url.compare(0, loc.size(), loc) == 0) {
+				if (url.size() == loc.size() || (url.size() > loc.size() && url[loc.size()] == '/') || (!loc.empty() && loc[loc.size() - 1] == '/')) {
+					if (loc.size() > bestLen) {
+						locationPath = loc;
+						bestLen = loc.size();
+					}
+				}
+			}
+		}
+
+		// init and take all my server thing for compare
+		std::string root = server->_root;
+		std::string index = server->_index;
+
+		std::map<std::string, std::string>::const_iterator rootIt = server->_locationRoots.find(locationPath);
+		if (rootIt != server->_locationRoots.end() && !rootIt->second.empty()) {
+			root = rootIt->second;
+		}
+
+		std::map<std::string, std::string>::const_iterator indexIt = server->_locationIndexes.find(locationPath);
+		if (indexIt != server->_locationIndexes.end() && !indexIt->second.empty()) {
+			index = indexIt->second;
+		}
+
+		// segfault peut etre ici dernier changement comparer avec la max body size du location au lieu du global si nécessaire,
+		size_t maxBodySize = server->_max_body_size;
+		std::map<std::string, size_t>::const_iterator maxBodySizeIt = server->_locationMaxBodySizes.find(locationPath);
+		if (maxBodySizeIt != server->_locationMaxBodySizes.end()) {
+			maxBodySize = maxBodySizeIt->second;
+		}*/
+
+		std::map<std::string, std::string>::const_iterator returnIt = server->_returnPaths.find(locationPath);
+		if (returnIt != server->_returnPaths.end() && !returnIt->second.empty()) {
+			int redirectCode = 301;
+			std::map<std::string, int>::const_iterator codeIt = server->_returnCodes.find(locationPath);
+			if (codeIt != server->_returnCodes.end()) {
+				redirectCode = codeIt->second;
+			}
+			res.set_status_code(redirectCode);
+			if (redirectCode == 301)
+				res.set_status_text("Moved Permanently");
+			else if (redirectCode == 302)
+				res.set_status_text("Found");
+			else if (redirectCode == 307)
+				res.set_status_text("Temporary Redirect");
+			else if (redirectCode == 308)
+				res.set_status_text("Permanent Redirect");
+			else
+				res.set_status_text("Redirect");
+			res.set_header("Location", returnIt->second);
+			res.set_body("");
+			res.set_header("Content-Length", "0");
+			client.setResponse(res);
+			return;
+		}
+		if (server->_max_body_size > 0) {
+			size_t bodySize = 0;
+			if (client.getRequest().hasHeader("Content-Length")) {
+				std::string clHeader = client.getRequest().getHeader("Content-Length");
+				size_t first = clHeader.find_first_not_of(" \t");
+				if (first != std::string::npos) {
+					clHeader = clHeader.substr(first);
+					size_t last = clHeader.find_last_not_of(" \t");
+					if (last != std::string::npos)
+						clHeader = clHeader.substr(0, last + 1);
+				}
+				bodySize = static_cast<size_t>(atoi(clHeader.c_str()));
+			} else {
+				bodySize = client.getRequest().get_body().size();
+			}
+			if (bodySize > server->_max_body_size) {
+				std::map<int, Reponse>::iterator it = server->_autoResponse.find(413);
+				if (it != server->_autoResponse.end()) {
+					res = it->second;
+				} else {
+					res.set_status_code(413);
+					res.set_status_text("Payload Too Large");
+					res.set_body("413 Payload Too Large\n");
+					res.set_header("Content-Type", "text/plain");
+					std::ostringstream oss;
+					oss << res.get_body().size();
+					res.set_header("Content-Length", oss.str());
+				}
+				client.setResponse(res);
+				return;
+			}
+		}
+
 		if (!is_method_allowed(method, client)) {
 			res = server->_autoResponse[405];
 		} else if (method == "GET") {
-			res = client.getRequest().handle_get();
+			res = client.getRequest().handle_get(root, index, locationPath);
 			if (res.get_status_code() == 500)
 				res = _clientToSocket[client.get_fd()]._autoResponse[500];
 		} else if (method == "POST") {
@@ -299,7 +389,7 @@ void Server::handle_request(Client &client) {
 			std::string contentType = req.getHeader("Content-Type");
 			if (contentType.find("multipart/form-data") != std::string::npos) {
 				if (handleFileUpload(req.get_body(), contentType, socket._upload_dir)) {
-					res = Reponse(client.getRequest().get_url());
+					res = Reponse(client.getRequest().get_url(), root, index, locationPath);
 					res.set_header("Content-Type", "text/html");
 					std::string boby ="<p style='color:green;'>Upload réussi !</p>";
 					res.set_body(boby);
@@ -307,14 +397,14 @@ void Server::handle_request(Client &client) {
 					oss_len << boby.size();
 					res.set_header("Content-Length", oss_len.str());
 				}
-			}else {
+			} else {
 				res = client.getRequest().handle_post();
 				if(res.get_status_code() == 500)
 					res = _clientToSocket[client.get_fd()]._autoResponse[500];
 				if(res.get_status_code() == 403)
 					res = _clientToSocket[client.get_fd()]._autoResponse[403];
 			}
-		}else if (method == "DELETE") {
+		} else if (method == "DELETE") {
 			res = client.getRequest().handle_delete();
 			if (res.get_status_code() == 500)
 				res = _clientToSocket[client.get_fd()]._autoResponse[500];
@@ -335,7 +425,6 @@ void Server::handle_request(Client &client) {
 	}
 
 	client.setResponse(res);
-
 }
 
 bool Server::is_method_allowed(const std::string &method, Client &client) {

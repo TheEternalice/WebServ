@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ade-rese <ade-rese@student.42.fr>          +#+  +:+       +#+        */
+/*   By: gpichon <gpichon@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/14 16:26:29 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/10/29 16:36:08 by ade-rese         ###   ########.fr       */
+/*   Updated: 2025/11/18 13:12:02 by gpichon          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,7 @@ class Request {
 		Request(const std::string &request, size_t bytes_read);
 		~Request();
 		Request(const Request &other);
-		
+
 		Request &operator=(const Request &other);
 
 		std::string get_method() const;
@@ -44,7 +44,7 @@ class Request {
 		void parse(const std::string &buffer, size_t bytes_read);
 		std::string parseChunked(const std::string& buffer);
 
-		Reponse handle_get();
+		Reponse handle_get(std::string root, std::string index,std::string locationRoots);
 		Reponse execute_cgi_get(std::string& path);
 		Reponse execute_cgi_post(std::string& path, std::string& body);
 		Reponse handle_post();

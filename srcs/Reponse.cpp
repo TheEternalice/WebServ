@@ -15,13 +15,40 @@
 
 Reponse::Reponse() {}
 
-Reponse::Reponse(std::string url) {
+Reponse::Reponse(std::string url, std::string root, std::string index, std::string locationPath) {
 	std::string path;
 	
+	if (locationPath != "/" && url.size() >= locationPath.size()) {
+		if (url.compare(0, locationPath.size(), locationPath) == 0) {
+			url = url.substr(locationPath.size());
+			if (url.empty() || url[0] != '/')
+				url = "/" + url;
+		}
+	}
+	if (!root.empty() && url.size() && url.find('/' + root) == 0) {
+		url = url.substr(root.size() + 1);
+		if (url.empty() || url[0] != '/')
+			url = "/" + url;
+	}
 	if (url == "/") {
-		path = "./page/accueil.html";
+		if (root.empty())
+			root = ".";
+		if (!index.empty()){
+			std::vector<std::string> indexFiles = cpp_split(index, ' ');
+			for (size_t i = 0; i < indexFiles.size(); i++) {
+				path = root + "/" + indexFiles[i];
+				if (access(path.c_str(), F_OK) == 0)
+					break;
+				path.clear();
+			}
+		}
+		if (path.empty())
+			path = root;
 	} else {
-		path = "." + url; // exemple : "/style.css" → "./style.css"
+		if (root.empty())
+			path = "." + url;
+		else
+			path = root + url;
 	}
 	std::ifstream file(path.c_str(), std::ios::binary);
 
