@@ -222,15 +222,17 @@ std::string Reponse::generateDirectoryListing(const std::string& dirPath, const 
 			parentUrl = "/";
 		html << "<tr><td><a href=\"" << parentUrl << "\">../</a></td><td>-</td><td>-</td></tr>\n";
 	}
-
+	
 	DIR* dir = opendir(dirPath.c_str());
 	if (dir != NULL) {
+		// DIRENT EST OBLIGATOIRE POUR UTILISER READDIR(QUI LUI EST AUTORISE PAR LE SUJET, IL RENVOIT UN DIRENT*). 
 		struct dirent* entry;
 		while ((entry = readdir(dir)) != NULL) {
 			if (entry->d_name[0] == '.')
 				continue;
 			
 			std::string entryPath = dirPath + "/" + entry->d_name;
+			// STAT EST OBLIGATOIRE POUR UTILISER S_ISDIR ET EST AUTORISE PAR LE SUJET.
 			struct stat entryStat;
 			if (stat(entryPath.c_str(), &entryStat) != 0)
 				continue;
@@ -243,7 +245,7 @@ std::string Reponse::generateDirectoryListing(const std::string& dirPath, const 
 			std::string displayName = entry->d_name;
 			if (S_ISDIR(entryStat.st_mode))
 				displayName += "/";
-			// A DEMANDER SI C'EST OK PAS SUR (UTILISER UNE FONCTION DE STAT NON NECESSAIRE STAT ETANT AUTORISE) 
+			
 			std::string sizeStr;
 			if (S_ISDIR(entryStat.st_mode))
 				sizeStr = "-";
