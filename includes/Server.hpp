@@ -50,8 +50,8 @@ struct ServerSocket {
 	std::map<std::string, std::string> _locationRoots;
 	std::map<std::string, std::string> _locationIndexes;
 	std::map<std::string, size_t> _locationMaxBodySizes;
+	std::map<std::string, bool> _locationAutoIndex;
 
-	int returnCode;
 	bool _autoIndex;
 
 	struct sockaddr_in address;
@@ -118,7 +118,7 @@ class Server {
 		void accept_client(int fd);
 		void handle_request(Client& client);
 		bool handleFileUpload(const std::string& body, const std::string& contentType, const std::string& uploadDir);
-		bool is_method_allowed(const std::string &method, Client &client);
+		bool is_method_allowed(const std::string &method, Client &client, const std::string &locationPath);
 
 		static std::string get_content_type(const std::string& path);
 		std::vector<ServerSocket> get_Socket();

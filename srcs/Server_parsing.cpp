@@ -40,8 +40,6 @@ void Server::parsing_serv(std::ifstream& file) {
 	}
 }
 
-// segfault surement ici, dernier changement le bodysize
-
 void Server::parsing(std::string name) {
 	std::ifstream file(name.c_str());
 	if (!file.is_open()){
@@ -173,7 +171,7 @@ void Server::extract_errorPage(std::vector<std::string>& tokens, std::ifstream& 
 }
 
 void Server::lexer_cpp(std::vector<std::string>& tokens, std::ifstream& file) {
-	std::string instruction[7] = {"listen", "server_name", "client_max_body_syze", "root", "index","error_page", "location"};
+	std::string instruction[7] = {"listen", "server_name", "client_max_body_size", "root", "index","error_page", "location"};
 
 	void (Server::*function[7])(std::vector<std::string>&, std::ifstream&) = {
 		&Server::extract_listen,
@@ -280,10 +278,13 @@ void Server::location_autoindex(std::vector<std::string> tokens){
 	if (!value.empty() && value[value.length() - 1] == ';'){
 		value = value.substr(0, value.length() - 1);
 	}
-	if (value == "on")
-		_sockets.back()._autoIndex = true;
-	else if (value == "off")
-		_sockets.back()._autoIndex = false;
+	bool autoIndexValue = (value == "on");
+	
+	std::string currentLocation = _sockets.back()._path;
+	if (!currentLocation.empty())
+		_sockets.back()._locationAutoIndex[currentLocation] = autoIndexValue;
+	else
+		_sockets.back()._autoIndex = autoIndexValue;
 }
 
 void Server::location_index(std::vector<std::string> tokens){
@@ -299,7 +300,8 @@ void Server::location_index(std::vector<std::string> tokens){
 	std::string currentLocation = _sockets.back()._path;
 	if (!currentLocation.empty())
 		_sockets.back()._locationIndexes[currentLocation] = index;
-	_sockets.back()._index = index;
+	else
+		_sockets.back()._index = index;
 }
 
 void Server::location_max_size(std::vector<std::string> tokens){
@@ -315,7 +317,8 @@ void Server::location_max_size(std::vector<std::string> tokens){
 	if (!currentLocation.empty()) {
 		_sockets.back()._locationMaxBodySizes[currentLocation] = static_cast<size_t>(atoi(value.c_str()));
 	}
-	_sockets.back()._max_body_size = atoi(value.c_str());
+	else
+		_sockets.back()._max_body_size = atoi(value.c_str());
 }
 
 void Server::location_upload_dir(std::vector<std::string> tokens){

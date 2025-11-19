@@ -44,7 +44,7 @@ class Request {
 		void parse(const std::string &buffer, size_t bytes_read);
 		std::string parseChunked(const std::string& buffer);
 
-		Reponse handle_get(std::string root, std::string index,std::string locationRoots);
+		Reponse handle_get(std::string root, std::string index,std::string locationRoots, bool autoIndex);
 		Reponse execute_cgi_get(std::string& path);
 		Reponse execute_cgi_post(std::string& path, std::string& body);
 		Reponse handle_post();

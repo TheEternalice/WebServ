@@ -268,7 +268,6 @@ void Server::accept_client(int fd) {
         return;
     }
 
-
 	// add to poll()
 	struct pollfd pfd;
 	pfd.fd = client_fd;
@@ -298,8 +297,19 @@ void Server::handle_request(Client &client) {
 				}
 			}
 		}
+		for (std::map<std::string, std::string>::const_iterator it = server->_returnPaths.begin(); it != server->_returnPaths.end(); ++it) {
+			const std::string &loc = it->first;
+			if (loc.empty()) continue;
+			if (url.size() >= loc.size() && url.compare(0, loc.size(), loc) == 0) {
+				if (url.size() == loc.size() || (url.size() > loc.size() && url[loc.size()] == '/') || (!loc.empty() && loc[loc.size() - 1] == '/')) {
+					if (loc.size() > bestLen) {
+						locationPath = loc;
+						bestLen = loc.size();
+					}
+				}
+			}
+		}
 
-		// init and take all my server thing for compare
 		std::string root = server->_root;
 		std::string index = server->_index;
 
@@ -313,12 +323,11 @@ void Server::handle_request(Client &client) {
 			index = indexIt->second;
 		}
 
-		// segfault peut etre ici dernier changement comparer avec la max body size du location au lieu du global si nécessaire,
 		size_t maxBodySize = server->_max_body_size;
 		std::map<std::string, size_t>::const_iterator maxBodySizeIt = server->_locationMaxBodySizes.find(locationPath);
 		if (maxBodySizeIt != server->_locationMaxBodySizes.end()) {
 			maxBodySize = maxBodySizeIt->second;
-		}*/
+		}
 
 		std::map<std::string, std::string>::const_iterator returnIt = server->_returnPaths.find(locationPath);
 		if (returnIt != server->_returnPaths.end() && !returnIt->second.empty()) {
@@ -344,7 +353,7 @@ void Server::handle_request(Client &client) {
 			client.setResponse(res);
 			return;
 		}
-		if (server->_max_body_size > 0) {
+		if (maxBodySize > 0) {
 			size_t bodySize = 0;
 			if (client.getRequest().hasHeader("Content-Length")) {
 				std::string clHeader = client.getRequest().getHeader("Content-Length");
@@ -359,7 +368,7 @@ void Server::handle_request(Client &client) {
 			} else {
 				bodySize = client.getRequest().get_body().size();
 			}
-			if (bodySize > server->_max_body_size) {
+			if (bodySize > maxBodySize) {
 				std::map<int, Reponse>::iterator it = server->_autoResponse.find(413);
 				if (it != server->_autoResponse.end()) {
 					res = it->second;
@@ -377,10 +386,16 @@ void Server::handle_request(Client &client) {
 			}
 		}
 
-		if (!is_method_allowed(method, client)) {
+		bool autoIndex = server->_autoIndex;
+		std::map<std::string, bool>::const_iterator autoIndexIt = server->_locationAutoIndex.find(locationPath);
+		if (autoIndexIt != server->_locationAutoIndex.end()) {
+			autoIndex = autoIndexIt->second;
+		}
+
+		if (!is_method_allowed(method, client, locationPath)) {
 			res = server->_autoResponse[405];
 		} else if (method == "GET") {
-			res = client.getRequest().handle_get(root, index, locationPath);
+			res = client.getRequest().handle_get(root, index, locationPath, autoIndex);
 			if (res.get_status_code() == 500)
 				res = _clientToSocket[client.get_fd()]._autoResponse[500];
 		} else if (method == "POST") {
@@ -389,7 +404,7 @@ void Server::handle_request(Client &client) {
 			std::string contentType = req.getHeader("Content-Type");
 			if (contentType.find("multipart/form-data") != std::string::npos) {
 				if (handleFileUpload(req.get_body(), contentType, socket._upload_dir)) {
-					res = Reponse(client.getRequest().get_url(), root, index, locationPath);
+					res = Reponse(client.getRequest().get_url(), root, index, locationPath, autoIndex);
 					res.set_header("Content-Type", "text/html");
 					std::string boby ="<p style='color:green;'>Upload réussi !</p>";
 					res.set_body(boby);
@@ -427,7 +442,7 @@ void Server::handle_request(Client &client) {
 	client.setResponse(res);
 }
 
-bool Server::is_method_allowed(const std::string &method, Client &client) {
+bool Server::is_method_allowed(const std::string &method, Client &client, const std::string &locationPath) {
 	ServerSocket *server = &_clientToSocket[client.get_fd()];
 	int nummethode = 0;
 	switch (method[0]) {
@@ -443,14 +458,7 @@ bool Server::is_method_allowed(const std::string &method, Client &client) {
 		default:
 			return false;
 	}
-	std::string tmpLocation = client.getRequest().get_url();
-	size_t pos = 0;
-	pos = tmpLocation.find_last_of('/');
-	if (pos != std::string::npos && pos > 0)
-		tmpLocation = tmpLocation.substr(0, pos);
-	else
-		tmpLocation = "/";
-	if ((server->_allowedMethods[tmpLocation] & nummethode) != 0)
+	if ((server->_allowedMethods[locationPath] & nummethode) != 0)
 		return true;
 	return false;
 }

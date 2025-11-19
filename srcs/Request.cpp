@@ -156,12 +156,12 @@ void Request::parseCookies() {
  * if the file is a CGI script and execute it
  * Else if return the file with code 200
  **********************************************/
-Reponse Request::handle_get(std::string root, std::string index, std::string locationPath) {
+Reponse Request::handle_get(std::string root, std::string index, std::string locationPath, bool autoIndex) {
 	try {
 		Reponse r = execute_cgi_get(_url);
 		return r;
 	} catch (std::exception &e) {
-		Reponse r = Reponse(_url, root, index, locationPath);
+		Reponse r = Reponse(_url, root, index, locationPath, autoIndex);
 		return r;
 	}		
 }

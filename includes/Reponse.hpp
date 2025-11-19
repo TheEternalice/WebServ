@@ -19,11 +19,14 @@
 #include <iostream>
 #include <algorithm>
 #include <cctype>
+#include <sys/stat.h>
+#include <dirent.h>
+#include <ctime>
 
 class Reponse {
 	public:
 		Reponse();
-		Reponse(std::string url,std::string root, std::string index, std::string locationPath);
+		Reponse(std::string url,std::string root, std::string index, std::string locationPath, bool autoIndex);
 		Reponse(int num, std::string path);
 		~Reponse();
 		Reponse(const Reponse &other);
@@ -49,4 +52,5 @@ class Reponse {
 		std::string _status_text;
 		std::map<std::string, std::string> _headers;
 		std::string _body;
+		std::string generateDirectoryListing(const std::string& dirPath, const std::string& url);
 };
