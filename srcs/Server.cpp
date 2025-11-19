@@ -287,7 +287,8 @@ void Server::handle_request(Client &client) {
 		size_t bestLen = 0;
 		for (std::map<std::string, int>::const_iterator it = server->_allowedMethods.begin(); it != server->_allowedMethods.end(); ++it) {
 			const std::string &loc = it->first;
-			if (loc.empty()) continue;
+			if (loc.empty()) 
+				continue;
 			if (url.size() >= loc.size() && url.compare(0, loc.size(), loc) == 0) {
 				if (url.size() == loc.size() || (url.size() > loc.size() && url[loc.size()] == '/') || (!loc.empty() && loc[loc.size() - 1] == '/')) {
 					if (loc.size() > bestLen) {
@@ -297,9 +298,11 @@ void Server::handle_request(Client &client) {
 				}
 			}
 		}
+		// deuxieme verification pour le /new (c'est une galere ce truc)
 		for (std::map<std::string, std::string>::const_iterator it = server->_returnPaths.begin(); it != server->_returnPaths.end(); ++it) {
 			const std::string &loc = it->first;
-			if (loc.empty()) continue;
+			if (loc.empty()) 
+				continue;
 			if (url.size() >= loc.size() && url.compare(0, loc.size(), loc) == 0) {
 				if (url.size() == loc.size() || (url.size() > loc.size() && url[loc.size()] == '/') || (!loc.empty() && loc[loc.size() - 1] == '/')) {
 					if (loc.size() > bestLen) {

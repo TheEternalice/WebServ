@@ -56,7 +56,7 @@ Reponse::Reponse(std::string url, std::string root, std::string index, std::stri
 	if (stat(path.c_str(), &path_stat) != 0 ) {
 		throw std::runtime_error("Can't open file");
 	}
-	// check on the directory if we have a idex
+	// check on the directory if we have a imdex
 	if (S_ISDIR(path_stat.st_mode)) {
 		bool indexFound = false;
 		if (!index.empty()) {
