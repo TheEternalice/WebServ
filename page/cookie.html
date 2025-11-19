@@ -91,7 +91,7 @@
 
 		function actualiserServeur() {
 			console.log('Actualisation serveur...');
-			fetch('http://localhost:8080/cgi-bin/cookie_simple.py')
+			fetch('http://localhost:8080/page/cgi-bin/cookie_simple.py')
 				.then(r => r.text())
 				.then(t => {
 					document.getElementById('cookieServeur').textContent = t;
@@ -111,7 +111,7 @@
 			if (nouvelleValeur !== null && nouvelleValeur !== '') {
 				console.log('Envoi nouvelle valeur au serveur:', nouvelleValeur);
 
-				fetch('http://localhost:8080/cgi-bin/cookie_simple.py', {
+				fetch('http://localhost:8080/page/cgi-bin/cookie_simple.py', {
 					method: 'POST',
 					headers: { 'Content-Type': 'text/plain' },
 					body: nouvelleValeur
@@ -135,7 +135,7 @@
 			if (confirm('Supprimer le cookie côté serveur ?')) {
 				console.log('Envoi suppression au serveur');
 
-				fetch('http://localhost:8080/cgi-bin/cookie_simple.py', {
+				fetch('http://localhost:8080/page/cgi-bin/cookie_simple.py', {
 					method: 'POST',
 					headers: { 'Content-Type': 'text/plain' },
 					body: ''

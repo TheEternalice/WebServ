@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Reponse.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ade-rese <ade-rese@student.42.fr>          +#+  +:+       +#+        */
+/*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 12:32:35 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/10/29 14:46:37 by ade-rese         ###   ########.fr       */
+/*   Updated: 2025/11/19 13:49:51 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,12 +44,19 @@ Reponse::Reponse(std::string url, std::string root, std::string index, std::stri
 			}
 		}
 		if (path.empty())
-			path = root;
+			path = root;	
 	} else {
+		std::cout << "locationpath = " << locationPath << std::endl;
+		std::cout << "urlpath = " << urlpath << std::endl;
+		std::cout << "url = " << url << std::endl;
+		std::cout << "root = " << root << std::endl;
 		if (root.empty())
 			path = "." + urlpath;
-		else
+		else if (autoIndex)
 			path = root + urlpath;
+		else
+			path = "." + urlpath;
+		std::cout << "path constructed: " << path << std::endl;
 	}
 
 	struct stat path_stat;
