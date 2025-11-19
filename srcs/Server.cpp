@@ -6,7 +6,7 @@
 /*   By: gpichon <gpichon@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/14 15:47:12 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/11/18 13:46:15 by gpichon          ###   ########.fr       */
+/*   Updated: 2025/11/19 16:10:51 by gpichon          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -198,6 +198,10 @@ void Server::run() {
 					Client *cl = _socketToClient[fd];
 					if (!cl) continue;
 					cl->readFromSocket();
+					if (cl->shouldClose()) {
+						disconnectClient(cl->get_fd());
+						continue;
+					}
 
 					if (cl->tryParseRequest()) {
 						handle_request(*cl);
@@ -213,7 +217,10 @@ void Server::run() {
 
 				Client *cl = it->second;
 				cl->writeToSocket();
-
+				if (cl->shouldClose()){
+					disconnectClient(cl->get_fd());
+					continue;
+				}
 				if (cl->outputEmpty()) {
 					if (cl->getReponse().isKeepAlive()) {
 						cl->resetForNextRequest();
@@ -274,6 +281,7 @@ void Server::accept_client(int fd) {
 	pfd.events = POLLIN;
 	pfd.revents = 0;
 	_fds.push_back(pfd);
+	std::cout << "New client accepted on fd : " << client_fd << std::endl;
 }
 
 void Server::handle_request(Client &client) {
@@ -287,7 +295,7 @@ void Server::handle_request(Client &client) {
 		size_t bestLen = 0;
 		for (std::map<std::string, int>::const_iterator it = server->_allowedMethods.begin(); it != server->_allowedMethods.end(); ++it) {
 			const std::string &loc = it->first;
-			if (loc.empty()) 
+			if (loc.empty())
 				continue;
 			if (url.size() >= loc.size() && url.compare(0, loc.size(), loc) == 0) {
 				if (url.size() == loc.size() || (url.size() > loc.size() && url[loc.size()] == '/') || (!loc.empty() && loc[loc.size() - 1] == '/')) {
@@ -301,7 +309,7 @@ void Server::handle_request(Client &client) {
 		// deuxieme verification pour le /new (c'est une galere ce truc)
 		for (std::map<std::string, std::string>::const_iterator it = server->_returnPaths.begin(); it != server->_returnPaths.end(); ++it) {
 			const std::string &loc = it->first;
-			if (loc.empty()) 
+			if (loc.empty())
 				continue;
 			if (url.size() >= loc.size() && url.compare(0, loc.size(), loc) == 0) {
 				if (url.size() == loc.size() || (url.size() > loc.size() && url[loc.size()] == '/') || (!loc.empty() && loc[loc.size() - 1] == '/')) {
@@ -341,7 +349,10 @@ void Server::handle_request(Client &client) {
 			}
 			res.set_status_code(redirectCode);
 			if (redirectCode == 301)
+			{
 				res.set_status_text("Moved Permanently");
+				server->_test = true;
+			}
 			else if (redirectCode == 302)
 				res.set_status_text("Found");
 			else if (redirectCode == 307)
@@ -354,6 +365,7 @@ void Server::handle_request(Client &client) {
 			res.set_body("");
 			res.set_header("Content-Length", "0");
 			client.setResponse(res);
+			server->_returnCode = redirectCode;
 			return;
 		}
 		if (maxBodySize > 0) {
@@ -398,7 +410,7 @@ void Server::handle_request(Client &client) {
 		if (!is_method_allowed(method, client, locationPath)) {
 			res = server->_autoResponse[405];
 		} else if (method == "GET") {
-			res = client.getRequest().handle_get(root, index, locationPath, autoIndex);
+			res = client.getRequest().handle_get(root, index, locationPath, autoIndex, &server->_test);
 			if (res.get_status_code() == 500)
 				res = _clientToSocket[client.get_fd()]._autoResponse[500];
 		} else if (method == "POST") {
@@ -407,7 +419,7 @@ void Server::handle_request(Client &client) {
 			std::string contentType = req.getHeader("Content-Type");
 			if (contentType.find("multipart/form-data") != std::string::npos) {
 				if (handleFileUpload(req.get_body(), contentType, socket._upload_dir)) {
-					res = Reponse(client.getRequest().get_url(), root, index, locationPath, autoIndex);
+					res = Reponse(client.getRequest().get_url(), root, index, locationPath, autoIndex, &server->_test);
 					res.set_header("Content-Type", "text/html");
 					std::string boby ="<p style='color:green;'>Upload réussi !</p>";
 					res.set_body(boby);

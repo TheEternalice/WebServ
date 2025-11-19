@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
+/*   By: gpichon <gpichon@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/14 16:26:26 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/10/30 15:04:13 by lde-merc         ###   ########.fr       */
+/*   Updated: 2025/11/19 15:48:03 by gpichon          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,7 +51,7 @@ std::string Request::get_body() const {
 	return _body;
 }
 
-std::map<std::string, std::string> Request::getCookies() const { 
+std::map<std::string, std::string> Request::getCookies() const {
 	return _request_cookies;
 }
 
@@ -61,10 +61,10 @@ void Request::parse(const std::string &buffer, size_t bytes_read) {
 	if (pos == std::string::npos) {
 		throw (std::runtime_error("Invalid HTTP request"));
 	}
-	
+
 	std::string header = buffer.substr(0, pos);
 	std::string body = buffer.substr(pos + 4);
-	
+
 	std::istringstream stream(header);
 	std::string line;
 	if (!std::getline(stream, line))
@@ -118,7 +118,7 @@ std::string Request::getHeader(const std::string &buffer) const {
 std::string Request::parseChunked(const std::string &buffer) {
 	std::string body;
 	size_t pos = 0;
-	
+
 	while (true) {
 		size_t endl = buffer.find("\r\n", pos);
 		if (endl == std::string::npos) break;
@@ -136,12 +136,12 @@ void Request::parseCookies() {
 	std::string cookies_header = getHeader("Cookie");
 	if (cookies_header.empty())
 		return ;
-	
+
 	std::vector<std::string> cookie_pair = cpp_split(cookies_header, ';');
 	for (size_t i = 0; i < cookie_pair.size(); ++i) {
 		std::string pair = trim(cookie_pair[i]);
 		size_t pos_equal = pair.find('=');
-		
+
 		if (pos_equal != std::string::npos) {
 			std::string name = trim(pair.substr(0, pos_equal));
 			std::string value = trim(pair.substr(pos_equal + 1));
@@ -156,14 +156,14 @@ void Request::parseCookies() {
  * if the file is a CGI script and execute it
  * Else if return the file with code 200
  **********************************************/
-Reponse Request::handle_get(std::string root, std::string index, std::string locationPath, bool autoIndex) {
+Reponse Request::handle_get(std::string root, std::string index, std::string locationPath, bool autoIndex, bool *testing) {
 	try {
 		Reponse r = execute_cgi_get(_url);
 		return r;
 	} catch (std::exception &e) {
-		Reponse r = Reponse(_url, root, index, locationPath, autoIndex);
+		Reponse r = Reponse(_url, root, index, locationPath, autoIndex, testing);
 		return r;
-	}		
+	}
 }
 
 Reponse Request::execute_cgi_get(std::string& url) {
@@ -172,7 +172,7 @@ Reponse Request::execute_cgi_get(std::string& url) {
 	if (access(path.c_str(), X_OK) != 0 || url == "/") {
 		throw std::runtime_error("");
 	}
-	
+
 	// Execute the CGI script
 	int pipe_fd[2];
 	pipe(pipe_fd);
@@ -188,47 +188,47 @@ Reponse Request::execute_cgi_get(std::string& url) {
 
 		std::string request_method = "REQUEST_METHOD=GET";
 		std::string path_env = "PATH=/usr/bin:/bin";
-		
+
 		// take the header cookie and change it into a vector in the server
 		std::string cookies_header = getHeader("Cookie");
 		std::string cookie_env;
 		if (!cookies_header.empty()) {
 			cookie_env = "HTTP_COOKIE=" + cookies_header;
 		}
-		
+
 		std::vector<std::string> env_strings;
 		env_strings.push_back(request_method);
 		env_strings.push_back(path_env);
 		if (!cookie_env.empty()) {
 			env_strings.push_back(cookie_env);
 		}
-		
+
 		char **envp = new char*[env_strings.size() + 1];
 		for (size_t i = 0; i < env_strings.size(); i++) {
 			envp[i] = const_cast<char*>(env_strings[i].c_str());
 		}
 		envp[env_strings.size()] = NULL;
-		
+
 		char *args[] = {const_cast<char*>(path.c_str()), NULL};
 		execve(path.c_str(), args, envp);
 		exit(1);
-		
-	} else {		
+
+	} else {
 		close(pipe_fd[1]);
-		
+
 		char buffer[4096];
         ssize_t bytes_read;
         std::ostringstream oss;
-		
+
         while ((bytes_read = read(pipe_fd[0], buffer, sizeof(buffer))) > 0) {
 			oss.write(buffer, bytes_read);
         }
-		
+
 		close(pipe_fd[0]);
 		waitpid(pid, NULL, 0);
-		
+
 		std::string body = oss.str();
-		
+
 		std::string::size_type pos = body.find("\r\n\r\n");
 		if (pos == std::string::npos)
 			pos = body.find("\n\n");
@@ -267,9 +267,9 @@ Reponse Request::execute_cgi_get(std::string& url) {
 		std::ostringstream oss_len;
 		oss_len << content.size();
 		r.set_header("Content-Length", oss_len.str());
-		
+
 		return r;
-	}		
+	}
 }
 
 
@@ -284,14 +284,14 @@ Reponse Request::execute_cgi_get(std::string& url) {
 ********************************************************/
 Reponse Request::handle_post() {
 	std::string path = "." + _url;
-	
+
 	// Check if the file is writable
 	if (access(path.c_str(), W_OK) != 0) {
 		Reponse r;
 		r.set_status_code(403); // No permission to write
 		return r;
 	}
-	
+
 	Reponse r;
 	r = execute_cgi_post(_url, _body); // give the body to the CGI
 	if (r.get_status_code() == -1) {
@@ -305,7 +305,7 @@ Reponse Request::handle_post() {
 		oss << r.get_body().size();
 		r.set_header("Content-Length", oss.str());
 	}
-	
+
 	return r;
 }
 
@@ -456,14 +456,14 @@ Reponse Request::execute_cgi_post(std::string& url, std::string& body) {
 *******************************************************/
 Reponse Request::handle_delete() {
 	std::string path = "." + _url;
-	
+
 	// Check if the file is writable
 	if (access(path.c_str(), W_OK) != 0) {
 		Reponse r;
 		r.set_status_code(403);
 		return r;
 	}
-	
+
 	// Delete the file
 	if (unlink(path.c_str()) != 0) {
 		Reponse r;

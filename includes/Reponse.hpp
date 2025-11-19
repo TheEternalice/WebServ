@@ -6,7 +6,7 @@
 /*   By: gpichon <gpichon@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 12:32:28 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/11/18 13:08:51 by gpichon          ###   ########.fr       */
+/*   Updated: 2025/11/19 15:49:16 by gpichon          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,7 @@
 class Reponse {
 	public:
 		Reponse();
-		Reponse(std::string url,std::string root, std::string index, std::string locationPath, bool autoIndex);
+		Reponse(std::string url,std::string root, std::string index, std::string locationPath, bool autoIndex, bool *_testing);
 		Reponse(int num, std::string path);
 		~Reponse();
 		Reponse(const Reponse &other);

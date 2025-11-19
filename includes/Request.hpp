@@ -6,7 +6,7 @@
 /*   By: gpichon <gpichon@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/14 16:26:29 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/11/18 13:12:02 by gpichon          ###   ########.fr       */
+/*   Updated: 2025/11/19 15:49:24 by gpichon          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,7 +44,7 @@ class Request {
 		void parse(const std::string &buffer, size_t bytes_read);
 		std::string parseChunked(const std::string& buffer);
 
-		Reponse handle_get(std::string root, std::string index,std::string locationRoots, bool autoIndex);
+		Reponse handle_get(std::string root, std::string index,std::string locationRoots, bool autoIndex, bool *testing);
 		Reponse execute_cgi_get(std::string& path);
 		Reponse execute_cgi_post(std::string& path, std::string& body);
 		Reponse handle_post();

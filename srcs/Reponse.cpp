@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Reponse.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ade-rese <ade-rese@student.42.fr>          +#+  +:+       +#+        */
+/*   By: gpichon <gpichon@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 12:32:35 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/10/29 14:46:37 by ade-rese         ###   ########.fr       */
+/*   Updated: 2025/11/19 15:51:21 by gpichon          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,10 +15,10 @@
 
 Reponse::Reponse() {}
 
-Reponse::Reponse(std::string url, std::string root, std::string index, std::string locationPath, bool autoIndex) {
+Reponse::Reponse(std::string url, std::string root, std::string index, std::string locationPath, bool autoIndex, bool *testing) {
 	std::string path;
 	std::string urlpath = url;
-	
+
 	if (locationPath != "/" && url.size() >= locationPath.size()) {
 		if (url.compare(0, locationPath.size(), locationPath) == 0) {
 			url = url.substr(locationPath.size());
@@ -48,8 +48,14 @@ Reponse::Reponse(std::string url, std::string root, std::string index, std::stri
 	} else {
 		if (root.empty())
 			path = "." + urlpath;
-		else
+		else if (autoIndex || *testing)
+		{
 			path = root + urlpath;
+			*testing = false;
+		}
+		else
+			path = "." + urlpath;
+		std::cout << path << std::endl;
 	}
 
 	struct stat path_stat;
@@ -70,7 +76,7 @@ Reponse::Reponse(std::string url, std::string root, std::string index, std::stri
 				}
 			}
 		}
-		
+
 		if (indexFound) {
 			// show the index
 			struct stat file_stat;
@@ -114,7 +120,7 @@ Reponse::Reponse(std::string url, std::string root, std::string index, std::stri
 		_status_text = "OK";
 		_headers["Content-Type"] = Server::get_content_type(path);
 	}
-	
+
 	std::ostringstream oss_len;
 	oss_len << _body.size();
 	_headers["Content-Length"] = oss_len.str();
@@ -122,7 +128,7 @@ Reponse::Reponse(std::string url, std::string root, std::string index, std::stri
 
 Reponse::Reponse(int num, std::string path) {
 	_status_code = num;
-	
+
 	switch (_status_code) {
 		case 400:
 			_status_text = "Bad request";
@@ -134,7 +140,7 @@ Reponse::Reponse(int num, std::string path) {
 			_status_text = "Not Found";
 			_headers["Connection"] = "close";
 			break;
-		case 405: 
+		case 405:
 			_status_text = "Method Not Allowed";
 			break;
 		case 500:
@@ -146,17 +152,17 @@ Reponse::Reponse(int num, std::string path) {
 		default:
 			break;
 	}
-	
+
 	_body = "";
 	std::ifstream bodyData(path.c_str());
 	if (!bodyData.is_open()) {throw std::runtime_error("Can't open bodyData file");}
-	
+
 	char c = 0;
 	while (bodyData.get(c)){ std::string s; s.push_back(c); _body += s; }
-	
+
 
 	if (_body.empty()) std::cout << "body empty in constructor" << std::endl;
-	_headers["Content-Type"] = Server::get_content_type(path);	
+	_headers["Content-Type"] = Server::get_content_type(path);
 	std::ostringstream oss;
 	oss << _body.size();
 	_headers["Content-Length"] = oss.str();
@@ -210,7 +216,7 @@ std::string Reponse::generateDirectoryListing(const std::string& dirPath, const 
 	html << "<h1>Index of " << url << "</h1>\n";
 	html << "<hr>\n<table>\n";
 	html << "<tr><th>Name</th><th>Size</th></tr>\n";
-	
+
 	if (url != "/") {
 		std::string parentUrl = url;
 		if (parentUrl[parentUrl.size() - 1] == '/')
@@ -222,30 +228,30 @@ std::string Reponse::generateDirectoryListing(const std::string& dirPath, const 
 			parentUrl = "/";
 		html << "<tr><td><a href=\"" << parentUrl << "\">../</a></td><td>-</td><td>-</td></tr>\n";
 	}
-	
+
 	DIR* dir = opendir(dirPath.c_str());
 	if (dir != NULL) {
-		// DIRENT EST OBLIGATOIRE POUR UTILISER READDIR(QUI LUI EST AUTORISE PAR LE SUJET, IL RENVOIT UN DIRENT*). 
+		// DIRENT EST OBLIGATOIRE POUR UTILISER READDIR(QUI LUI EST AUTORISE PAR LE SUJET, IL RENVOIT UN DIRENT*).
 		struct dirent* entry;
 		while ((entry = readdir(dir)) != NULL) {
 			if (entry->d_name[0] == '.')
 				continue;
-			
+
 			std::string entryPath = dirPath + "/" + entry->d_name;
 			// STAT EST OBLIGATOIRE POUR UTILISER S_ISDIR ET EST AUTORISE PAR LE SUJET.
 			struct stat entryStat;
 			if (stat(entryPath.c_str(), &entryStat) != 0)
 				continue;
-			
+
 			std::string entryUrl = url;
 			if (!entryUrl.empty() && entryUrl[entryUrl.size() - 1] != '/')
 				entryUrl += "/";
 			entryUrl += entry->d_name;
-			
+
 			std::string displayName = entry->d_name;
 			if (S_ISDIR(entryStat.st_mode))
 				displayName += "/";
-			
+
 			std::string sizeStr;
 			if (S_ISDIR(entryStat.st_mode))
 				sizeStr = "-";
@@ -254,13 +260,13 @@ std::string Reponse::generateDirectoryListing(const std::string& dirPath, const 
 				sizeOss << entryStat.st_size;
 				sizeStr = sizeOss.str();
 			}
-			
+
 			html << "<tr><td><a href=\"" << entryUrl << "\">" << displayName << "</a></td>";
 			html << "<td>" << sizeStr << "</td></tr>\n";
 		}
 		closedir(dir);
 	}
-	
+
 	html << "</table>\n<hr>\n</body>\n</html>\n";
 	return html.str();
 }

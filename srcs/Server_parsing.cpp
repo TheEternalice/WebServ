@@ -6,7 +6,7 @@
 /*   By: gpichon <gpichon@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/23 09:28:12 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/11/18 13:30:33 by gpichon          ###   ########.fr       */
+/*   Updated: 2025/11/19 15:45:04 by gpichon          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -279,7 +279,7 @@ void Server::location_autoindex(std::vector<std::string> tokens){
 		value = value.substr(0, value.length() - 1);
 	}
 	bool autoIndexValue = (value == "on");
-	
+
 	std::string currentLocation = _sockets.back()._path;
 	if (!currentLocation.empty())
 		_sockets.back()._locationAutoIndex[currentLocation] = autoIndexValue;

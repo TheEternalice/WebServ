@@ -6,7 +6,7 @@
 /*   By: gpichon <gpichon@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/14 15:47:19 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/11/18 13:13:26 by gpichon          ###   ########.fr       */
+/*   Updated: 2025/11/19 15:17:55 by gpichon          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,6 +43,7 @@ struct ServerSocket {
 	std::string _returnPath;
 	int 		_returnCode;
 	std::string _upload_dir;
+	bool		_test;
 
 	std::map<int, std::string> _error_pages;
 	std::map<std::string, int> _returnCodes;

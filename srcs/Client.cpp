@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ade-rese <ade-rese@student.42.fr>          +#+  +:+       +#+        */
+/*   By: gpichon <gpichon@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/20 14:17:07 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/10/29 14:45:11 by ade-rese         ###   ########.fr       */
+/*   Updated: 2025/11/19 16:09:56 by gpichon          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,13 +31,8 @@ void Client::readFromSocket() {
 	char buffer[8192];
 	int bytes_read = recv(_fd, buffer, sizeof(buffer), 0);
 
-	if (bytes_read < 0) {
-		if (errno == EAGAIN || errno == EWOULDBLOCK)
-			return;
-		throw std::runtime_error("recv() failed");
-	}
-	if (bytes_read == 0) {
-		_closed = true; // client close
+	if (bytes_read <= 0) {
+		_closed = true; // close client
 		return;
 	}
 	_bytes_read += bytes_read;
@@ -80,10 +75,9 @@ void Client::writeToSocket() {
 		return;
 
 	int sent = send(_fd, _buffer_out.c_str(), _buffer_out.size(), 0);
-	if (sent < 0) {
-		if (errno == EAGAIN || errno == EWOULDBLOCK)
-			return;
-		throw std::runtime_error("send() failed");
+	if (sent <= 0) {
+		_closed = true;
+		return;
 	}
 	_buffer_out.erase(0, sent);
 }
@@ -97,7 +91,7 @@ Request Client::getRequest() {
 }
 
 int	Client::get_fd() {
-	return (_fd);	
+	return (_fd);
 }
 
 void Client::setResponse(Reponse res) {
