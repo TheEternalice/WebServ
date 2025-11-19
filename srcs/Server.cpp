@@ -6,7 +6,7 @@
 /*   By: gpichon <gpichon@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/14 15:47:12 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/11/19 16:10:51 by gpichon          ###   ########.fr       */
+/*   Updated: 2025/11/19 16:27:38 by gpichon          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -293,6 +293,7 @@ void Server::handle_request(Client &client) {
 		std::string url = client.getRequest().get_url();
 		std::string locationPath = "/";
 		size_t bestLen = 0;
+
 		for (std::map<std::string, int>::const_iterator it = server->_allowedMethods.begin(); it != server->_allowedMethods.end(); ++it) {
 			const std::string &loc = it->first;
 			if (loc.empty())
