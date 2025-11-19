@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gpichon <gpichon@student.42.fr>            +#+  +:+       +#+        */
+/*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/14 15:47:12 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/11/19 16:27:38 by gpichon          ###   ########.fr       */
+/*   Updated: 2025/11/19 17:52:44 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -414,6 +414,8 @@ void Server::handle_request(Client &client) {
 			res = client.getRequest().handle_get(root, index, locationPath, autoIndex, &server->_test);
 			if (res.get_status_code() == 500)
 				res = _clientToSocket[client.get_fd()]._autoResponse[500];
+			if (res.get_status_code() == 504)
+				res = _clientToSocket[client.get_fd()]._autoResponse[500]; // 504 a envoyer sur page automatique 
 		} else if (method == "POST") {
 			Request req = client.getRequest();
 			ServerSocket socket = _clientToSocket[client.get_fd()];
@@ -453,6 +455,7 @@ void Server::handle_request(Client &client) {
 		res.set_header("Keep-Alive", "timeout=20, max=100");
 	} else {
 		res.set_header("Connection", "close");
+		client.setClosed();
 	}
 
 	client.setResponse(res);

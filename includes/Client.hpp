@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/20 14:17:13 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/10/29 09:43:15 by lde-merc         ###   ########.fr       */
+/*   Updated: 2025/11/19 17:43:30 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,6 +42,7 @@ class Client {
 		Reponse getReponse();
 		int get_fd();
 		void setResponse(Reponse res);
+		void setClosed();
 		
 	private:
 		Reponse _reponse;

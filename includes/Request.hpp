@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gpichon <gpichon@student.42.fr>            +#+  +:+       +#+        */
+/*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/14 16:26:29 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/11/19 15:49:24 by gpichon          ###   ########.fr       */
+/*   Updated: 2025/11/19 17:47:27 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,12 +17,12 @@
 #include <iostream>
 #include <unistd.h>
 #include <sys/wait.h>
+#include <sys/time.h>
 #include <fcntl.h>
 #include <algorithm>
 
 
 #include "Reponse.hpp"
-
 
 class Request {
 	public:
@@ -58,4 +58,6 @@ class Request {
 		std::map<std::string, std::string> _headers; // "Host" -> "localhost:8080"
 		std::string _body;         // Body of the request (POST data)
 		std::map<std::string, std::string> _request_cookies;
+		bool _waitingCgi;
+		time_t _lastActivity;
 };

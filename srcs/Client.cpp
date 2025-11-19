@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gpichon <gpichon@student.42.fr>            +#+  +:+       +#+        */
+/*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/20 14:17:07 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/11/19 16:09:56 by gpichon          ###   ########.fr       */
+/*   Updated: 2025/11/19 17:48:41 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,7 @@ Client::Client(const Client &other) {
     *this = other;
 }
 
-Client::Client(int fd): _fd(fd) { }
+Client::Client(int fd): _fd(fd), _closed(false) { }
 
 Client &Client::operator=(const Client &other) {
     if (this != &other) {}
@@ -75,11 +75,14 @@ void Client::writeToSocket() {
 		return;
 
 	int sent = send(_fd, _buffer_out.c_str(), _buffer_out.size(), 0);
-	if (sent <= 0) {
+	if (sent < 0) {
 		_closed = true;
 		return;
+	} else if( sent == 0) {
+		return ;
+	} else {
+		_buffer_out.erase(0, sent);
 	}
-	_buffer_out.erase(0, sent);
 }
 
 bool Client::outputEmpty() {
@@ -123,4 +126,8 @@ std::string Client::getBufferOut() {
 
 Reponse Client::getReponse() {
 	return _reponse;
+}
+
+void Client::setClosed() {
+	_closed = true;
 }

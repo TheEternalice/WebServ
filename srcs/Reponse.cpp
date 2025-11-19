@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Reponse.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gpichon <gpichon@student.42.fr>            +#+  +:+       +#+        */
+/*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 12:32:35 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/11/19 16:27:19 by gpichon          ###   ########.fr       */
+/*   Updated: 2025/11/19 16:38:33 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,10 +46,6 @@ Reponse::Reponse(std::string url, std::string root, std::string index, std::stri
 		if (path.empty())
 			path = root;
 	} else {
-		std::cout << "locationpath = " << locationPath << std::endl;
-		std::cout << "urlpath = " << urlpath << std::endl;
-		std::cout << "url = " << url << std::endl;
-		std::cout << "root = " << root << std::endl;
 		if (root.empty())
 			path = "." + urlpath;
 		else if (autoIndex || *testing)
@@ -59,7 +55,6 @@ Reponse::Reponse(std::string url, std::string root, std::string index, std::stri
 		}
 		else
 			path = "." + urlpath;
-		std::cout << path << std::endl;
 	}
 
 	struct stat path_stat;

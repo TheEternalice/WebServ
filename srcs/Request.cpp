@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gpichon <gpichon@student.42.fr>            +#+  +:+       +#+        */
+/*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/14 16:26:26 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/11/19 15:48:03 by gpichon          ###   ########.fr       */
+/*   Updated: 2025/11/19 17:54:43 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -166,6 +166,14 @@ Reponse Request::handle_get(std::string root, std::string index, std::string loc
 	}
 }
 
+long now_ms() {
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    return tv.tv_sec * 1000 + tv.tv_usec / 1000;
+}
+
+
+
 Reponse Request::execute_cgi_get(std::string& url) {
 	std::string path = "." + url;
 
@@ -173,12 +181,16 @@ Reponse Request::execute_cgi_get(std::string& url) {
 		throw std::runtime_error("");
 	}
 
+	_waitingCgi = true;
+	_lastActivity = std::time(NULL);
+	
 	// Execute the CGI script
 	int pipe_fd[2];
 	pipe(pipe_fd);
 	pid_t pid = fork();
 	Reponse r;
 	if (pid < 0) {
+		_waitingCgi = false;
 		r.set_status_code(500);
 		return r;
 	} else if (pid == 0) {
@@ -216,16 +228,43 @@ Reponse Request::execute_cgi_get(std::string& url) {
 	} else {
 		close(pipe_fd[1]);
 
+		fcntl(pipe_fd[0], F_SETFL, O_NONBLOCK);
+		
 		char buffer[4096];
-        ssize_t bytes_read;
         std::ostringstream oss;
+		
+		const int TIMEOUT_MS = 5000;
+		long start = now_ms();
+		int status;
+		bool finished = false;
 
-        while ((bytes_read = read(pipe_fd[0], buffer, sizeof(buffer))) > 0) {
-			oss.write(buffer, bytes_read);
-        }
+		
+		while(true) {
+        	ssize_t bytes_read = read(pipe_fd[0], buffer, sizeof(buffer));
+			if (bytes_read > 0) {
+				oss.write(buffer, bytes_read);
+				_lastActivity = std::time(NULL);
+			}
+			
+			pid_t result = waitpid(pid, &status, WNOHANG);
+			if (result == pid) {
+				finished = true;
+				break;
+			}
+			
+			long elapsed = now_ms() - start;
+			if (elapsed > TIMEOUT_MS) {
+				kill(pid, SIGKILL);
+				waitpid(pid, NULL, 0);
+				close(pipe_fd[0]);
+				r.set_status_code(504);
+				return r;
+			}
+
+			usleep(1);
+		}
 
 		close(pipe_fd[0]);
-		waitpid(pid, NULL, 0);
 
 		std::string body = oss.str();
 
