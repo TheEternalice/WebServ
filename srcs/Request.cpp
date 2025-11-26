@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gpichon <gpichon@student.42.fr>            +#+  +:+       +#+        */
+/*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/14 16:26:26 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/11/25 15:16:02 by gpichon          ###   ########.fr       */
+/*   Updated: 2025/11/26 15:14:39 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -163,7 +163,8 @@ Reponse Request::handle_get(std::string root, std::string index, std::string loc
 			r.set_status_code(500);
 		return r;
 	} catch (std::exception &e) {
-		if (static_cast<std::string>(e.what()) == "file") {
+		std::string error = static_cast<std::string>(e.what());
+		if (error == "file" || error == "empty") {
 			Reponse r;
 			r.set_status_code(500);
 			return r;
@@ -184,9 +185,12 @@ Reponse Request::execute_cgi_get(std::string& url, bool *testing) {
 		throw std::runtime_error("html");
 	std::string path = "." + url;
 	struct stat st;
-	if (stat(path.c_str(), &st) != 0 ) {
+	if (stat(path.c_str(), &st) != 0)
 		throw std::runtime_error("file");
-	}
+		
+	if (st.st_size == 0)
+		throw std::runtime_error("empty");
+		
 	if (access(("." + _url).c_str(), X_OK) != 0 || url == "/")
 		throw std::runtime_error("html");
 
