@@ -6,7 +6,7 @@
 /*   By: gpichon <gpichon@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/14 15:47:19 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/11/19 15:17:55 by gpichon          ###   ########.fr       */
+/*   Updated: 2025/11/19 17:59:56 by gpichon          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,10 @@
 #include <poll.h>
 #include <vector>
 #include <csignal>
+
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
 #include <cerrno>
 #include <fcntl.h>

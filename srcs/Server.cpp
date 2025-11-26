@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
+/*   By: gpichon <gpichon@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/14 15:47:12 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/11/19 17:52:44 by lde-merc         ###   ########.fr       */
+/*   Updated: 2025/11/25 17:46:55 by gpichon          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -291,37 +291,16 @@ void Server::handle_request(Client &client) {
 
 	try {
 		std::string url = client.getRequest().get_url();
-		std::string locationPath = "/";
-		size_t bestLen = 0;
+		std::cout << url << std::endl;
+		std::string locationPath;
 
-		for (std::map<std::string, int>::const_iterator it = server->_allowedMethods.begin(); it != server->_allowedMethods.end(); ++it) {
-			const std::string &loc = it->first;
-			if (loc.empty())
-				continue;
-			if (url.size() >= loc.size() && url.compare(0, loc.size(), loc) == 0) {
-				if (url.size() == loc.size() || (url.size() > loc.size() && url[loc.size()] == '/') || (!loc.empty() && loc[loc.size() - 1] == '/')) {
-					if (loc.size() > bestLen) {
-						locationPath = loc;
-						bestLen = loc.size();
-					}
-				}
-			}
+		if (url == "/")
+			locationPath = "/";
+		else {
+			size_t loca;
+			loca = url.find_last_of("/");
+			locationPath = url.substr(loca, (loca - url.size() - 1));
 		}
-		// deuxieme verification pour le /new (c'est une galere ce truc)
-		for (std::map<std::string, std::string>::const_iterator it = server->_returnPaths.begin(); it != server->_returnPaths.end(); ++it) {
-			const std::string &loc = it->first;
-			if (loc.empty())
-				continue;
-			if (url.size() >= loc.size() && url.compare(0, loc.size(), loc) == 0) {
-				if (url.size() == loc.size() || (url.size() > loc.size() && url[loc.size()] == '/') || (!loc.empty() && loc[loc.size() - 1] == '/')) {
-					if (loc.size() > bestLen) {
-						locationPath = loc;
-						bestLen = loc.size();
-					}
-				}
-			}
-		}
-
 		std::string root = server->_root;
 		std::string index = server->_index;
 
@@ -401,28 +380,34 @@ void Server::handle_request(Client &client) {
 				return;
 			}
 		}
-
 		bool autoIndex = server->_autoIndex;
 		std::map<std::string, bool>::const_iterator autoIndexIt = server->_locationAutoIndex.find(locationPath);
 		if (autoIndexIt != server->_locationAutoIndex.end()) {
 			autoIndex = autoIndexIt->second;
 		}
+		// gros problemme de merde a corriger sur les root, changer la root ici pour verif la method correctement notamment avec is_method_allowed
 
 		if (!is_method_allowed(method, client, locationPath)) {
 			res = server->_autoResponse[405];
-		} else if (method == "GET") {
+		}
+		if (method == "GET") {
 			res = client.getRequest().handle_get(root, index, locationPath, autoIndex, &server->_test);
 			if (res.get_status_code() == 500)
 				res = _clientToSocket[client.get_fd()]._autoResponse[500];
 			if (res.get_status_code() == 504)
-				res = _clientToSocket[client.get_fd()]._autoResponse[500]; // 504 a envoyer sur page automatique 
+				res = _clientToSocket[client.get_fd()]._autoResponse[500]; // 504 a envoyer sur page automatique
 		} else if (method == "POST") {
 			Request req = client.getRequest();
 			ServerSocket socket = _clientToSocket[client.get_fd()];
 			std::string contentType = req.getHeader("Content-Type");
 			if (contentType.find("multipart/form-data") != std::string::npos) {
-				if (handleFileUpload(req.get_body(), contentType, socket._upload_dir)) {
-					res = Reponse(client.getRequest().get_url(), root, index, locationPath, autoIndex, &server->_test);
+				std::cout << req.get_body() << "content = " << contentType << "	upload dir : " << socket._upload_dir << "url : "<< url <<std::endl;
+				if (handleFileUpload(req.get_body(), contentType, "." + url)) {
+					std::cout << "je rentre1" << std::endl;
+					// Reponse res;
+					//res = Reponse(client.getRequest().get_url(), root, index, locationPath, autoIndex, &server->_test);
+					res.set_status_code(200);
+					res.set_status_text("OK");
 					res.set_header("Content-Type", "text/html");
 					std::string boby ="<p style='color:green;'>Upload réussi !</p>";
 					res.set_body(boby);
@@ -457,7 +442,6 @@ void Server::handle_request(Client &client) {
 		res.set_header("Connection", "close");
 		client.setClosed();
 	}
-
 	client.setResponse(res);
 }
 
@@ -477,6 +461,7 @@ bool Server::is_method_allowed(const std::string &method, Client &client, const 
 		default:
 			return false;
 	}
+	std::cout << locationPath << std::endl;
 	if ((server->_allowedMethods[locationPath] & nummethode) != 0)
 		return true;
 	return false;

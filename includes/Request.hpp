@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
+/*   By: gpichon <gpichon@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/14 16:26:29 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/11/19 17:47:27 by lde-merc         ###   ########.fr       */
+/*   Updated: 2025/11/20 15:48:27 by gpichon          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,7 +45,7 @@ class Request {
 		std::string parseChunked(const std::string& buffer);
 
 		Reponse handle_get(std::string root, std::string index,std::string locationRoots, bool autoIndex, bool *testing);
-		Reponse execute_cgi_get(std::string& path);
+		Reponse execute_cgi_get(std::string& path, bool *testing);
 		Reponse execute_cgi_post(std::string& path, std::string& body);
 		Reponse handle_post();
 		Reponse handle_delete();

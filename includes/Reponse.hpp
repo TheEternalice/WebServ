@@ -6,7 +6,7 @@
 /*   By: gpichon <gpichon@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 12:32:28 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/11/19 15:49:16 by gpichon          ###   ########.fr       */
+/*   Updated: 2025/11/25 14:13:35 by gpichon          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,11 +46,13 @@ class Reponse {
 		void set_status_text(const std::string& text);
 		void set_body(const std::string& body);
 		void set_header(const std::string& key, const std::string& value);
-
+		void set_up();
+		bool get_up();
 	private:
 		int _status_code;
 		std::string _status_text;
 		std::map<std::string, std::string> _headers;
 		std::string _body;
+		bool _up; // bool pour upload ou pas;
 		std::string generateDirectoryListing(const std::string& dirPath, const std::string& url);
 };

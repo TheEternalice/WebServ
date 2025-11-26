@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
+/*   By: gpichon <gpichon@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/14 16:26:26 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/11/19 17:54:43 by lde-merc         ###   ########.fr       */
+/*   Updated: 2025/11/25 15:16:02 by gpichon          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -158,9 +158,16 @@ void Request::parseCookies() {
  **********************************************/
 Reponse Request::handle_get(std::string root, std::string index, std::string locationPath, bool autoIndex, bool *testing) {
 	try {
-		Reponse r = execute_cgi_get(_url);
+		Reponse r = execute_cgi_get(_url, testing);
+		if (r.get_body() == "")
+			r.set_status_code(500);
 		return r;
 	} catch (std::exception &e) {
+		if (static_cast<std::string>(e.what()) == "file") {
+			Reponse r;
+			r.set_status_code(500);
+			return r;
+		}
 		Reponse r = Reponse(_url, root, index, locationPath, autoIndex, testing);
 		return r;
 	}
@@ -172,18 +179,20 @@ long now_ms() {
     return tv.tv_sec * 1000 + tv.tv_usec / 1000;
 }
 
-
-
-Reponse Request::execute_cgi_get(std::string& url) {
+Reponse Request::execute_cgi_get(std::string& url, bool *testing) {
+	if (*testing)
+		throw std::runtime_error("html");
 	std::string path = "." + url;
-
-	if (access(path.c_str(), X_OK) != 0 || url == "/") {
-		throw std::runtime_error("");
+	struct stat st;
+	if (stat(path.c_str(), &st) != 0 ) {
+		throw std::runtime_error("file");
 	}
+	if (access(("." + _url).c_str(), X_OK) != 0 || url == "/")
+		throw std::runtime_error("html");
 
 	_waitingCgi = true;
 	_lastActivity = std::time(NULL);
-	
+
 	// Execute the CGI script
 	int pipe_fd[2];
 	pipe(pipe_fd);
@@ -198,60 +207,58 @@ Reponse Request::execute_cgi_get(std::string& url) {
 		dup2(pipe_fd[1], STDOUT_FILENO);
 		close(pipe_fd[1]);
 
-		std::string request_method = "REQUEST_METHOD=GET";
-		std::string path_env = "PATH=/usr/bin:/bin";
+		std::vector<std::string> env_strings;
+		env_strings.push_back("REQUEST_METHOD=GET");
+		env_strings.push_back("PATH=/usr/bin:/bin");
 
 		// take the header cookie and change it into a vector in the server
 		std::string cookies_header = getHeader("Cookie");
-		std::string cookie_env;
 		if (!cookies_header.empty()) {
-			cookie_env = "HTTP_COOKIE=" + cookies_header;
+			env_strings.push_back("HTTP_COOKIE=" + cookies_header);
 		}
 
-		std::vector<std::string> env_strings;
-		env_strings.push_back(request_method);
-		env_strings.push_back(path_env);
-		if (!cookie_env.empty()) {
-			env_strings.push_back(cookie_env);
-		}
+		std::vector<char*> envp;
+		envp.reserve(env_strings.size() + 1);
 
-		char **envp = new char*[env_strings.size() + 1];
-		for (size_t i = 0; i < env_strings.size(); i++) {
-			envp[i] = const_cast<char*>(env_strings[i].c_str());
-		}
-		envp[env_strings.size()] = NULL;
+		for (size_t i = 0; i < env_strings.size(); i++)
+			envp.push_back(const_cast<char*>(env_strings[i].c_str()));
+
+		envp.push_back(NULL);
 
 		char *args[] = {const_cast<char*>(path.c_str()), NULL};
-		execve(path.c_str(), args, envp);
+		execve(path.c_str(), args, envp.data());
 		exit(1);
 
 	} else {
 		close(pipe_fd[1]);
 
 		fcntl(pipe_fd[0], F_SETFL, O_NONBLOCK);
-		
+
 		char buffer[4096];
         std::ostringstream oss;
-		
+
 		const int TIMEOUT_MS = 5000;
 		long start = now_ms();
 		int status;
 		bool finished = false;
 
-		
+
 		while(true) {
         	ssize_t bytes_read = read(pipe_fd[0], buffer, sizeof(buffer));
 			if (bytes_read > 0) {
 				oss.write(buffer, bytes_read);
 				_lastActivity = std::time(NULL);
 			}
-			
+
 			pid_t result = waitpid(pid, &status, WNOHANG);
 			if (result == pid) {
 				finished = true;
 				break;
 			}
-			
+			if (finished)
+			{
+				continue;
+			}
 			long elapsed = now_ms() - start;
 			if (elapsed > TIMEOUT_MS) {
 				kill(pid, SIGKILL);
@@ -399,28 +406,15 @@ Reponse Request::execute_cgi_post(std::string& url, std::string& body) {
 		if (!cookies_header.empty()) {
 			cgi_vars.push_back("HTTP_COOKIE=" + cookies_header);
 		}
-		for (size_t i = 0; i < cgi_vars.size(); ++i) {
-			std::string key = cgi_vars[i].substr(0, cgi_vars[i].find('='));
-			bool found = false;
-			for (size_t j = 0; j < env_vec.size(); ++j) {
-				if (env_vec[j].find(key + "=") == 0) {
-					env_vec[j] = cgi_vars[i];
-					found = true;
-					break;
-				}
-			}
-			if (!found)
-				env_vec.push_back(cgi_vars[i]);
-		}
-		char **envp = new char*[env_vec.size() + 1];
-		for (size_t i = 0; i < env_vec.size(); i++)
-			envp[i] = const_cast<char*>(env_vec[i].c_str());
-		envp[env_vec.size()] = NULL;
+		std::vector<char*> envp;
+		envp.reserve(cgi_vars.size() + 1);
 
+		for (size_t i = 0; i < cgi_vars.size(); i++)
+			envp.push_back(const_cast<char*>(cgi_vars[i].c_str()));
+
+		envp.push_back(NULL);
 		char *args[] = {const_cast<char*>(path.c_str()), NULL};
-		execve(path.c_str(), args, envp);
-		perror("execve failed");
-		delete[] envp;
+		execve(path.c_str(), args, envp.data());
 		exit(1);
 	} else {
 		// Parent : write the body, read the output
@@ -466,7 +460,6 @@ Reponse Request::execute_cgi_post(std::string& url, std::string& body) {
 		} else {
 			content = cgi_output;
 		}
-
 		Reponse r;
 		r.set_status_code(200);
 		r.set_status_text("OK");

@@ -6,7 +6,7 @@
 /*   By: gpichon <gpichon@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/23 09:28:12 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/11/19 15:45:04 by gpichon          ###   ########.fr       */
+/*   Updated: 2025/11/25 17:45:08 by gpichon          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,6 +68,7 @@ void Server::parsing(std::string name) {
 			serv._root = "";
 			serv._returnPath = "";
 			serv._upload_dir = "";
+			serv._test = false;
 			serv._allowedMethods["/"] = 0;
 			memset(&serv.address, 0, sizeof(serv.address));
 			serv._addrlen = sizeof(serv.address);

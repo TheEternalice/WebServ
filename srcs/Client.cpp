@@ -3,16 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
+/*   By: gpichon <gpichon@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/20 14:17:07 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/11/19 17:48:41 by lde-merc         ###   ########.fr       */
+/*   Updated: 2025/11/19 18:08:43 by gpichon          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/Client.hpp"
 
-Client::Client() { }
+Client::Client()  { }
 
 Client::~Client() { }
 

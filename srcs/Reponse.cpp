@@ -3,17 +3,23 @@
 /*                                                        :::      ::::::::   */
 /*   Reponse.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
+/*   By: gpichon <gpichon@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 12:32:35 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/11/19 16:38:33 by lde-merc         ###   ########.fr       */
+/*   Updated: 2025/11/25 15:15:34 by gpichon          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/Reponse.hpp"
 #include "../includes/Server.hpp"
 
-Reponse::Reponse() {}
+Reponse::Reponse() {
+	this->_body = "";
+	this-> _headers[""] = "";
+	this->_status_code = 0;
+	this->_status_text = "";
+	this->_up = false;
+}
 
 Reponse::Reponse(std::string url, std::string root, std::string index, std::string locationPath, bool autoIndex, bool *testing) {
 	std::string path;
@@ -58,17 +64,17 @@ Reponse::Reponse(std::string url, std::string root, std::string index, std::stri
 	}
 
 	struct stat path_stat;
-	if (stat(path.c_str(), &path_stat) != 0 ) {
+	if (stat(path.c_str(), &path_stat) != 0) {
 		throw std::runtime_error("Can't open file");
 	}
 	// check on the directory if we have a imdex
-	if (S_ISDIR(path_stat.st_mode)) {
+	if (S_ISDIR(path_stat.st_mode) && !_up) {
 		bool indexFound = false;
 		if (!index.empty()) {
 			std::vector<std::string> indexFiles = cpp_split(index, ' ');
 			for (size_t i = 0; i < indexFiles.size(); i++) {
 				std::string indexPath = path + "/" + indexFiles[i];
-				if (access(indexPath.c_str(), F_OK) == 0) {
+				if ((access(indexPath.c_str(), F_OK) == 0)) {
 					path = indexPath;
 					indexFound = true;
 					break;
@@ -163,8 +169,12 @@ Reponse::Reponse(int num, std::string path) {
 	if (_body.empty()) std::cout << "body empty in constructor" << std::endl;
 	_headers["Content-Type"] = Server::get_content_type(path);
 	std::ostringstream oss;
-	oss << _body.size();
-	_headers["Content-Length"] = oss.str();
+	if (_body.size() != 0){
+		oss << _body.size();
+		_headers["Content-Length"] = oss.str();
+	}
+	else
+		_headers["Content-Length"] = "";
 }
 
 Reponse::~Reponse() {}
@@ -298,6 +308,14 @@ void Reponse::set_status_text(const std::string& text) {
 
 void Reponse::set_body(const std::string& body) {
 	_body = body;
+}
+
+void Reponse::set_up() {
+	_up = true;
+}
+
+bool Reponse::get_up() {
+	return _up;
 }
 
 void Reponse::set_header(const std::string& key, const std::string& value) {
