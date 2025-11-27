@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gpichon <gpichon@student.42.fr>            +#+  +:+       +#+        */
+/*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/14 15:47:12 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/11/25 17:46:55 by gpichon          ###   ########.fr       */
+/*   Updated: 2025/11/27 13:55:26 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -401,8 +401,8 @@ void Server::handle_request(Client &client) {
 			ServerSocket socket = _clientToSocket[client.get_fd()];
 			std::string contentType = req.getHeader("Content-Type");
 			if (contentType.find("multipart/form-data") != std::string::npos) {
-				std::cout << req.get_body() << "content = " << contentType << "	upload dir : " << socket._upload_dir << "url : "<< url <<std::endl;
-				if (handleFileUpload(req.get_body(), contentType, "." + url)) {
+				// std::cout << req.get_body() << "content = " << contentType << "	upload dir : " << socket._upload_dir << "url : "<< url <<std::endl;
+				if (handleFileUpload(req.get_body(), contentType, root + locationPath)) {
 					std::cout << "je rentre1" << std::endl;
 					// Reponse res;
 					//res = Reponse(client.getRequest().get_url(), root, index, locationPath, autoIndex, &server->_test);
@@ -524,6 +524,7 @@ bool Server::handleFileUpload(const std::string& body,
 		return false;
 
 	size_t fileSize = dataEnd - headerEnd - 2;
+	std::cout << "file: " << uploadDir + "/" + filename << std::endl;
 	std::ofstream file((uploadDir + "/" + filename).c_str(), std::ios::binary);
 	if (!file.is_open())
 		return false;
