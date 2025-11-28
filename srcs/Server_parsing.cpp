@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server_parsing.cpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gpichon <gpichon@student.42.fr>            +#+  +:+       +#+        */
+/*   By: ade-rese <ade-rese@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/23 09:28:12 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/11/25 17:45:08 by gpichon          ###   ########.fr       */
+/*   Updated: 2025/11/28 13:50:29 by ade-rese         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,7 @@ const char* Server::Badextention::what() const throw() {
 }
 
 const char* Server::CannotBeOpen::what() const throw() {
-    return ("file Cannot be oppen");
+	return ("file Cannot be oppen");
 }
 
 void Server::parsing_serv(std::ifstream& file) {
@@ -50,9 +50,9 @@ void Server::parsing(std::string name) {
 	}
 
 	std::string line;
-    while (std::getline(file, line)) {
+	while (std::getline(file, line)) {
 		line = trim(line);
-        if (line.empty() || line.at(0) == '#')
+		if (line.empty() || line.at(0) == '#')
 			continue;
 		if (line == "server {") {
 			ServerSocket serv;
@@ -149,7 +149,7 @@ void Server::extract_maxBodySyze(std::vector<std::string>& tokens, std::ifstream
 		return ;
 
 	std::string value = tokens[1];
-	 if (!value.empty() && value[value.length() - 1] == ';') {
+	if (!value.empty() && value[value.length() - 1] == ';') {
 		value = value.substr(0, value.length() - 1);
 	}
 

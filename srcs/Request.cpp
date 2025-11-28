@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ade-rese <ade-rese@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/14 16:26:26 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/11/26 15:14:39 by lde-merc         ###   ########.fr       */
+/*   Updated: 2025/11/28 14:19:47 by ade-rese         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,19 +24,19 @@ Request::Request(const std::string &request, size_t bytes_read) {
 Request::~Request() {}
 
 Request::Request(const Request& other) {
-    *this = other;
+	*this = other;
 }
 
 Request &Request::operator=(const Request& other) {
-    if (this != &other) {
-        this->_body = other._body;
+	if (this != &other) {
+		this->_body = other._body;
 		this->_headers = other._headers;
 		this->_url = other._url;
 		this->_method = other._method;
 		this->_http_version = other._http_version;
 		this->_request_cookies = other._request_cookies;
-    }
-    return *this;
+	}
+	return *this;
 }
 
 std::string Request::get_method() const {
@@ -103,7 +103,7 @@ bool Request::hasHeader(const std::string &buffer) const {return (_headers.find(
 std::string Request::getCookie(const std::string& name) const {
 	std::map<std::string, std::string>::const_iterator it = _request_cookies.find(name);
 	if (it != _request_cookies.end()) {
-	    return it->second;
+		return it->second;
 	}
 	return ("");
 }
@@ -175,9 +175,9 @@ Reponse Request::handle_get(std::string root, std::string index, std::string loc
 }
 
 long now_ms() {
-    struct timeval tv;
-    gettimeofday(&tv, NULL);
-    return tv.tv_sec * 1000 + tv.tv_usec / 1000;
+	struct timeval tv;
+	gettimeofday(&tv, NULL);
+	return tv.tv_sec * 1000 + tv.tv_usec / 1000;
 }
 
 Reponse Request::execute_cgi_get(std::string& url, bool *testing) {
@@ -231,7 +231,7 @@ Reponse Request::execute_cgi_get(std::string& url, bool *testing) {
 
 		char *args[] = {const_cast<char*>(path.c_str()), NULL};
 		execve(path.c_str(), args, envp.data());
-		exit(1);
+		std::exit(1);
 
 	} else {
 		close(pipe_fd[1]);
@@ -239,7 +239,7 @@ Reponse Request::execute_cgi_get(std::string& url, bool *testing) {
 		fcntl(pipe_fd[0], F_SETFL, O_NONBLOCK);
 
 		char buffer[4096];
-        std::ostringstream oss;
+		std::ostringstream oss;
 
 		const int TIMEOUT_MS = 5000;
 		long start = now_ms();
@@ -248,7 +248,7 @@ Reponse Request::execute_cgi_get(std::string& url, bool *testing) {
 
 
 		while(true) {
-        	ssize_t bytes_read = read(pipe_fd[0], buffer, sizeof(buffer));
+			ssize_t bytes_read = read(pipe_fd[0], buffer, sizeof(buffer));
 			if (bytes_read > 0) {
 				oss.write(buffer, bytes_read);
 				_lastActivity = std::time(NULL);
@@ -333,7 +333,6 @@ Reponse Request::execute_cgi_get(std::string& url, bool *testing) {
  * Return 500 if server error
 ********************************************************/
 Reponse Request::handle_post(std::string uploadDir) {
-	
 
 	// Check if the file is writable
 	if (access(uploadDir.c_str(), W_OK) != 0) {
@@ -368,7 +367,7 @@ Reponse Request::handle_post(std::string uploadDir) {
 				// search % for get hexadecimal values (ascii table)  
 				size_t percentPos;
 				while ((percentPos = message.find("%")) != std::string::npos && 
-				       percentPos + 2 < message.length()) {
+					percentPos + 2 < message.length()) {
 					std::string hex = message.substr(percentPos + 1, 2);
 					std::istringstream iss(hex);
 					unsigned int value;
@@ -382,10 +381,10 @@ Reponse Request::handle_post(std::string uploadDir) {
 			} else {
 				message = body;
 			}
-			
+
 			out << message << std::endl;
 			out.close();
-			
+
 			r.set_status_code(200);
 			r.set_status_text("OK");
 			r.set_body("Data saved successfully\n");
@@ -463,7 +462,7 @@ Reponse Request::execute_cgi_post(std::string& url, std::string& body) {
 		envp.push_back(NULL);
 		char *args[] = {const_cast<char*>(path.c_str()), NULL};
 		execve(path.c_str(), args, envp.data());
-		exit(1);
+		std::exit(1);
 	} else {
 		// Parent : write the body, read the output
 		close(pipe_in[0]);
@@ -529,7 +528,7 @@ Reponse Request::execute_cgi_post(std::string& url, std::string& body) {
  * Equivalent of rm file but for the client
  * Interpret the request
 	 Existence and permission of delete by
-	 	the client with unlink()
+		the client with unlink()
 	* Return 200 if ok
 	* Return 403 if it's a directory
 	* Return 500 if server error

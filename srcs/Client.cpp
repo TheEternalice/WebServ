@@ -3,28 +3,28 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gpichon <gpichon@student.42.fr>            +#+  +:+       +#+        */
+/*   By: ade-rese <ade-rese@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/20 14:17:07 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/11/19 18:08:43 by gpichon          ###   ########.fr       */
+/*   Updated: 2025/11/28 13:44:55 by ade-rese         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/Client.hpp"
 
-Client::Client()  { }
+Client::Client() { }
 
 Client::~Client() { }
 
 Client::Client(const Client &other) {
-    *this = other;
+	*this = other;
 }
 
 Client::Client(int fd): _fd(fd), _closed(false) { }
 
 Client &Client::operator=(const Client &other) {
-    if (this != &other) {}
-    return *this;
+	if (this != &other) {}
+	return *this;
 }
 
 void Client::readFromSocket() {

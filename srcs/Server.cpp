@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ade-rese <ade-rese@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/14 15:47:12 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/11/27 13:55:26 by lde-merc         ###   ########.fr       */
+/*   Updated: 2025/11/28 14:19:47 by ade-rese         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -138,7 +138,7 @@ void Server::init() {
 		int flags = fcntl(_sockets[i].fd, F_GETFL, 0);
 		if (flags == -1) {
 			std::cerr << "fcntl F_GETFL" << std::endl;
-			exit(1);
+			std::exit(1);
 		}
 		if (fcntl(_sockets[i].fd, F_SETFL, flags | O_NONBLOCK) == -1)
 			throw std::runtime_error("fcntl F_SETFL");
@@ -183,7 +183,7 @@ void Server::run() {
 			if (errno == EINTR)
 				continue;
 			std::cerr << "Poll error" << std::endl;
-			exit(EXIT_FAILURE);
+			std::exit(EXIT_FAILURE);
 		}
 		if (ret == 0) continue;
 
@@ -250,7 +250,7 @@ void Server::accept_client(int fd) {
 		if (errno == EAGAIN || errno == EWOULDBLOCK)
 			return; // Nothing to accept
 		std::cerr << "accept() failed on fd " << fd << ": "
-				  << strerror(errno) << std::endl;
+				<< strerror(errno) << std::endl;
 		return;
 	}
 
@@ -264,16 +264,16 @@ void Server::accept_client(int fd) {
 
 	ServerSocket &server = _listeningSockets[fd];
 
-    // create a new client and link it to the server
-    Client* client = new Client(client_fd);
-    _socketToClient[client_fd] = client;
-    _clientToSocket[client_fd] = server;
+	// create a new client and link it to the server
+	Client* client = new Client(client_fd);
+	_socketToClient[client_fd] = client;
+	_clientToSocket[client_fd] = server;
 
 	if (_listeningSockets.count(fd) == 0) {
-        std::cerr << "Unknown listening socket fd: " << fd << std::endl;
-        close(client_fd);
-        return;
-    }
+		std::cerr << "Unknown listening socket fd: " << fd << std::endl;
+		close(client_fd);
+		return;
+	}
 
 	// add to poll()
 	struct pollfd pfd;
@@ -388,7 +388,6 @@ void Server::handle_request(Client &client) {
 		if (autoIndexIt != server->_locationAutoIndex.end()) {
 			autoIndex = autoIndexIt->second;
 		}
-		// gros problemme de merde a corriger sur les root, changer la root ici pour verif la method correctement notamment avec is_method_allowed
 
 		if (!is_method_allowed(method, client, locationPath)) {
 			res = server->_autoResponse[405];

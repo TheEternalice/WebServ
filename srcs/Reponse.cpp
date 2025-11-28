@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Reponse.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gpichon <gpichon@student.42.fr>            +#+  +:+       +#+        */
+/*   By: ade-rese <ade-rese@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 12:32:35 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/11/25 15:15:34 by gpichon          ###   ########.fr       */
+/*   Updated: 2025/11/28 13:49:01 by ade-rese         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -214,7 +214,6 @@ std::string Reponse::to_string() const {
 }
 
 std::string Reponse::generateDirectoryListing(const std::string& dirPath, const std::string& url) {
-	// si vous voulez changer l'affichage amusez vous
 	std::ostringstream html;
 	html << "<!DOCTYPE html>\n<html>\n<head>\n";
 	html << "<title>Index of " << url << "</title>\n";
@@ -245,14 +244,14 @@ std::string Reponse::generateDirectoryListing(const std::string& dirPath, const 
 
 	DIR* dir = opendir(dirPath.c_str());
 	if (dir != NULL) {
-		// DIRENT EST OBLIGATOIRE POUR UTILISER READDIR(QUI LUI EST AUTORISE PAR LE SUJET, IL RENVOIT UN DIRENT*).
+		// DIRENT is mendatory to use READDIR which is allowed by the subject it return a DIRENT*)
 		struct dirent* entry;
 		while ((entry = readdir(dir)) != NULL) {
 			if (entry->d_name[0] == '.')
 				continue;
 
 			std::string entryPath = dirPath + "/" + entry->d_name;
-			// STAT EST OBLIGATOIRE POUR UTILISER S_ISDIR ET EST AUTORISE PAR LE SUJET.
+			// STAT is mendatory to use S_ISDIR and it's allowed by the subject
 			struct stat entryStat;
 			if (stat(entryPath.c_str(), &entryStat) != 0)
 				continue;
