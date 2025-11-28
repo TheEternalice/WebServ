@@ -70,6 +70,8 @@ void Server::parsing(std::string name) {
 			serv._upload_dir = "";
 			serv._test = false;
 			serv._allowedMethods["/"] = 0;
+			serv._cgiExtensions.clear();
+			serv._autoResponse.clear();
 			memset(&serv.address, 0, sizeof(serv.address));
 			serv._addrlen = sizeof(serv.address);
 			_sockets.push_back(serv);
@@ -171,21 +173,36 @@ void Server::extract_errorPage(std::vector<std::string>& tokens, std::ifstream& 
 	_sockets.back()._error_pages[code] = name_page;
 }
 
-void Server::lexer_cpp(std::vector<std::string>& tokens, std::ifstream& file) {
-	std::string instruction[7] = {"listen", "server_name", "client_max_body_size", "root", "index","error_page", "location"};
+void Server::extract_upload_dir(std::vector<std::string>& tokens, std::ifstream& file) {
+	(void)file;
+	if (tokens.size() < 2)
+		return ;
 
-	void (Server::*function[7])(std::vector<std::string>&, std::ifstream&) = {
+	std::string upload_dir;
+	upload_dir = tokens[1];
+	if (!upload_dir.empty() && upload_dir[upload_dir.length() - 1] == ';'){
+		upload_dir = upload_dir.substr(0, upload_dir.length() - 1);
+	}
+
+	_sockets.back()._upload_dir = upload_dir;
+}
+
+void Server::lexer_cpp(std::vector<std::string>& tokens, std::ifstream& file) {
+	std::string instruction[8] = {"listen", "server_name", "client_max_body_size", "root", "index","error_page", "upload_dir", "location"};
+
+	void (Server::*function[8])(std::vector<std::string>&, std::ifstream&) = {
 		&Server::extract_listen,
 		&Server::extract_serverName,
 		&Server::extract_maxBodySyze,
 		&Server::extract_root,
 		&Server::extract_index,
 		&Server::extract_errorPage,
+		&Server::extract_upload_dir,
 		&Server::extract_location
 	};
 
 	static int c = 0;
-	for (int i = 0; i < 7; i++) {
+	for (int i = 0; i < 8; i++) {
 		if (tokens[0] == "listen" || tokens[0] == "server_name") c++;
 		if (tokens[0] == instruction[i]) (this->*function[i])(tokens, file);
 	}
@@ -331,7 +348,11 @@ void Server::location_upload_dir(std::vector<std::string> tokens){
 		value = value.substr(0, value.length() - 1);
 	}
 
-	_sockets.back()._upload_dir = value;
+	std::string currentLocation = _sockets.back()._path;
+	if (!currentLocation.empty())
+		_sockets.back()._locationUploadDirs[currentLocation] = value;
+	else
+		_sockets.back()._upload_dir = value;
 }
 
 

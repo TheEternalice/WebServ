@@ -22,6 +22,11 @@ Reponse::Reponse() {
 }
 
 Reponse::Reponse(std::string url, std::string root, std::string index, std::string locationPath, bool autoIndex, bool *testing) {
+	this->_body = "";
+	this->_status_code = 0;
+	this->_status_text = "";
+	this->_up = false;
+	
 	std::string path;
 	std::string urlpath = url;
 

@@ -60,7 +60,7 @@ re: fclean all
 -include $(DEP)
 
 val: all
-	valgrind --leak-check=full --show-leak-kinds=all ./$(NAME) conf_file/valid_file/maximal_valid.conf || true
+	valgrind --leak-check=full --show-leak-kinds=all --track-fds=yes ./$(NAME) conf_file/valid_file/maximal_valid.conf || true
 
 test: all
 	@for file in $(INVALID_FILE); do \

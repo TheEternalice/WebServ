@@ -291,7 +291,6 @@ void Server::handle_request(Client &client) {
 
 	try {
 		std::string url = client.getRequest().get_url();
-		std::cout << url << std::endl;
 		std::string locationPath;
 
 		if (url == "/")
@@ -299,7 +298,11 @@ void Server::handle_request(Client &client) {
 		else {
 			size_t loca;
 			loca = url.find_last_of("/");
-			locationPath = url.substr(loca, (loca - url.size() - 1));
+			if (loca != std::string::npos) {
+				locationPath = url.substr(loca);
+			} else {
+				locationPath = "/";
+			}
 		}
 		std::string root = server->_root;
 		std::string index = server->_index;
@@ -398,14 +401,29 @@ void Server::handle_request(Client &client) {
 				res = _clientToSocket[client.get_fd()]._autoResponse[500]; // 504 a envoyer sur page automatique
 		} else if (method == "POST") {
 			Request req = client.getRequest();
-			ServerSocket socket = _clientToSocket[client.get_fd()];
 			std::string contentType = req.getHeader("Content-Type");
+			std::string uploadDir = server->_upload_dir;
+				std::map<std::string, std::string>::const_iterator uploadDirIt = server->_locationUploadDirs.find(locationPath);
+				if (uploadDirIt != server->_locationUploadDirs.end() && !uploadDirIt->second.empty()) {
+					uploadDir = uploadDirIt->second;
+				}
+				if (uploadDir.empty()) {
+					uploadDir = root + locationPath;
+				} else {
+					if (uploadDir.size() >= 2 && uploadDir.substr(0, 2) == "./") {
+						if (!root.empty()) {
+							uploadDir = root + "/" + uploadDir.substr(2);
+						} else {
+							uploadDir = uploadDir.substr(2);
+						}
+					} else if (uploadDir[0] != '/') {
+						if (!root.empty()) {
+							uploadDir = root + "/" + uploadDir;
+						}
+					}
+				}
 			if (contentType.find("multipart/form-data") != std::string::npos) {
-				// std::cout << req.get_body() << "content = " << contentType << "	upload dir : " << socket._upload_dir << "url : "<< url <<std::endl;
-				if (handleFileUpload(req.get_body(), contentType, root + locationPath)) {
-					std::cout << "je rentre1" << std::endl;
-					// Reponse res;
-					//res = Reponse(client.getRequest().get_url(), root, index, locationPath, autoIndex, &server->_test);
+				if (handleFileUpload(req.get_body(), contentType, uploadDir)) {
 					res.set_status_code(200);
 					res.set_status_text("OK");
 					res.set_header("Content-Type", "text/html");
@@ -414,9 +432,11 @@ void Server::handle_request(Client &client) {
 					std::ostringstream oss_len;
 					oss_len << boby.size();
 					res.set_header("Content-Length", oss_len.str());
+				} else {
+					res = server->_autoResponse[403];
 				}
-			} else {
-				res = client.getRequest().handle_post();
+			} else {;
+				res = client.getRequest().handle_post(uploadDir);
 				if(res.get_status_code() == 500)
 					res = _clientToSocket[client.get_fd()]._autoResponse[500];
 				if(res.get_status_code() == 403)
@@ -461,7 +481,6 @@ bool Server::is_method_allowed(const std::string &method, Client &client, const 
 		default:
 			return false;
 	}
-	std::cout << locationPath << std::endl;
 	if ((server->_allowedMethods[locationPath] & nummethode) != 0)
 		return true;
 	return false;
@@ -490,7 +509,7 @@ void Server::removeFdFromPoll(int fd) {
 
 bool Server::handleFileUpload(const std::string& body,
 							const std::string& contentType,
-							const std::string& uploadDir)
+							std::string uploadDir)
 {
 	std::string boundaryKey = "boundary=";
 	size_t bpos = contentType.find(boundaryKey);
@@ -524,7 +543,22 @@ bool Server::handleFileUpload(const std::string& body,
 		return false;
 
 	size_t fileSize = dataEnd - headerEnd - 2;
-	std::cout << "file: " << uploadDir + "/" + filename << std::endl;
+	struct stat dirStat;
+	if (stat(uploadDir.c_str(), &dirStat) != 0) {    
+		if (mkdir(uploadDir.c_str(), 0755) != 0) {
+			std::cerr << "Failed to create upload directory: " << uploadDir << std::endl;
+			return false;
+		}
+	} else if (!S_ISDIR(dirStat.st_mode)) {
+		std::cerr << "Upload path is not a directory: " << uploadDir << std::endl;
+		return false;
+	}
+	
+	if (access(uploadDir.c_str(), W_OK) != 0) {
+		std::cerr << "No write permission for upload directory: " << uploadDir << std::endl;
+		return false;
+	}
+	
 	std::ofstream file((uploadDir + "/" + filename).c_str(), std::ios::binary);
 	if (!file.is_open())
 		return false;

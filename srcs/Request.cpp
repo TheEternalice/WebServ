@@ -332,11 +332,11 @@ Reponse Request::execute_cgi_get(std::string& url, bool *testing) {
  * Return 403 if no permissions
  * Return 500 if server error
 ********************************************************/
-Reponse Request::handle_post() {
-	std::string path = "." + _url;
+Reponse Request::handle_post(std::string uploadDir) {
+	
 
 	// Check if the file is writable
-	if (access(path.c_str(), W_OK) != 0) {
+	if (access(uploadDir.c_str(), W_OK) != 0) {
 		Reponse r;
 		r.set_status_code(403); // No permission to write
 		return r;
@@ -345,15 +345,59 @@ Reponse Request::handle_post() {
 	Reponse r;
 	r = execute_cgi_post(_url, _body); // give the body to the CGI
 	if (r.get_status_code() == -1) {
-		std::ofstream out(path.c_str(), std::ios::binary);
-		out << _body;
-		r.set_status_code(200);
-		r.set_status_text("OK");
-		r.set_body("Data saved successfully\n");
-		r.set_header("Content-Type", "text/plain");
-		std::ostringstream oss;
-		oss << r.get_body().size();
-		r.set_header("Content-Length", oss.str());
+		std::string filePath = uploadDir + "/test.txt";
+		if (access(filePath.c_str(), W_OK) != 0) {
+			Reponse r;
+			r.set_status_code(403); // No permission to write
+			return r;
+		}
+		std::ofstream out(filePath.c_str(), std::ios::binary | std::ios::app);
+		if (out.is_open()) {
+			std::string body = _body;
+			std::string message;
+			
+			// search message in the body
+			size_t msgPos = body.find("message=");
+			if (msgPos != std::string::npos) {
+				message = body.substr(msgPos + 8);
+				// replace + by space
+				size_t plusPos;
+				while ((plusPos = message.find("+")) != std::string::npos) {
+					message.replace(plusPos, 1, " ");
+				}
+				// search % for get hexadecimal values (ascii table)  
+				size_t percentPos;
+				while ((percentPos = message.find("%")) != std::string::npos && 
+				       percentPos + 2 < message.length()) {
+					std::string hex = message.substr(percentPos + 1, 2);
+					std::istringstream iss(hex);
+					unsigned int value;
+					if (iss >> std::hex >> value) {
+						char decoded = static_cast<char>(value);
+						message.replace(percentPos, 3, 1, decoded);
+					} else {
+						percentPos += 3;
+					}
+				}
+			} else {
+				message = body;
+			}
+			
+			out << message << std::endl;
+			out.close();
+			
+			r.set_status_code(200);
+			r.set_status_text("OK");
+			r.set_body("Data saved successfully\n");
+			r.set_header("Content-Type", "text/plain");
+			std::ostringstream oss;
+			oss << r.get_body().size();
+			r.set_header("Content-Length", oss.str());
+		} else {
+			r.set_status_code(500);
+			r.set_status_text("Internal Server Error");
+			r.set_body("Failed to create file\n");
+		}
 	}
 
 	return r;

@@ -20,6 +20,7 @@
 #include <sys/time.h>
 #include <fcntl.h>
 #include <algorithm>
+#include <sstream>
 
 
 #include "Reponse.hpp"
@@ -47,7 +48,7 @@ class Request {
 		Reponse handle_get(std::string root, std::string index,std::string locationRoots, bool autoIndex, bool *testing);
 		Reponse execute_cgi_get(std::string& path, bool *testing);
 		Reponse execute_cgi_post(std::string& path, std::string& body);
-		Reponse handle_post();
+		Reponse handle_post(std::string uploadDir);
 		Reponse handle_delete();
 		void parseCookies();
 

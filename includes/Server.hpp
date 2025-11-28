@@ -56,6 +56,7 @@ struct ServerSocket {
 	std::map<std::string, std::string> _locationIndexes;
 	std::map<std::string, size_t> _locationMaxBodySizes;
 	std::map<std::string, bool> _locationAutoIndex;
+	std::map<std::string, std::string> _locationUploadDirs;
 
 	bool _autoIndex;
 
@@ -102,6 +103,7 @@ class Server {
 		void extract_root(std::vector<std::string>& tokens, std::ifstream& file);
 		void extract_index(std::vector<std::string>& tokens, std::ifstream& file);
 		void extract_errorPage(std::vector<std::string>& tokens, std::ifstream& file);
+		void extract_upload_dir(std::vector<std::string>& tokens, std::ifstream& file);
 		void extract_location(std::vector<std::string>& tokens, std::ifstream& file);
 
 
@@ -122,7 +124,7 @@ class Server {
 		void run();
 		void accept_client(int fd);
 		void handle_request(Client& client);
-		bool handleFileUpload(const std::string& body, const std::string& contentType, const std::string& uploadDir);
+		bool handleFileUpload(const std::string& body, const std::string& contentType, std::string uploadDir);
 		bool is_method_allowed(const std::string &method, Client &client, const std::string &locationPath);
 
 		static std::string get_content_type(const std::string& path);
