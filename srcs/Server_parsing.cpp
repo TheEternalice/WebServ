@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server_parsing.cpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ade-rese <ade-rese@student.42.fr>          +#+  +:+       +#+        */
+/*   By: gpichon <gpichon@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/23 09:28:12 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/11/28 13:50:29 by ade-rese         ###   ########.fr       */
+/*   Updated: 2025/11/28 15:59:57 by gpichon          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -216,6 +216,7 @@ void Server::location_root(std::vector<std::string> tokens) {
 
 	std::string root;
 	root = tokens[1];
+
 	if (!root.empty() && root[root.length() - 1] == ';'){
 		root = root.substr(0, root.length() - 1);
 	}
@@ -223,7 +224,6 @@ void Server::location_root(std::vector<std::string> tokens) {
 	std::string currentLocation = _sockets.back()._path;
 	if (!currentLocation.empty())
 		_sockets.back()._locationRoots[currentLocation] = root;
-	_sockets.back()._root = root;
 }
 
 void Server::location_methods(std::vector<std::string> tokens){

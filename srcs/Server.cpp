@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ade-rese <ade-rese@student.42.fr>          +#+  +:+       +#+        */
+/*   By: gpichon <gpichon@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/14 15:47:12 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/11/28 14:19:47 by ade-rese         ###   ########.fr       */
+/*   Updated: 2025/11/28 16:59:47 by gpichon          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -292,32 +292,35 @@ void Server::handle_request(Client &client) {
 	try {
 		std::string url = client.getRequest().get_url();
 		std::string locationPath;
+		std::string root = server->_root;
+		std::string index = server->_index;
+		size_t maxBodySize = server->_max_body_size;
 
 		if (url == "/")
 			locationPath = "/";
 		else {
 			size_t loca;
 			loca = url.find_last_of("/");
-			if (loca != std::string::npos) {
-				locationPath = url.substr(loca);
-			} else {
-				locationPath = "/";
+			locationPath = url.substr(loca, (loca - url.size() - 1));
+			int newpos = url.rfind('/', loca);
+			if (access(url.c_str(), R_OK) != 0) {
+				std::cout << "je passe ici" << std::endl;
+				if (!newpos)
+					locationPath = root;
+				else
+					locationPath = url.substr(newpos, loca - newpos - 1);
 			}
 		}
-		std::string root = server->_root;
-		std::string index = server->_index;
-
+		std::cout << locationPath << std::endl;
 		std::map<std::string, std::string>::const_iterator rootIt = server->_locationRoots.find(locationPath);
 		if (rootIt != server->_locationRoots.end() && !rootIt->second.empty()) {
 			root = rootIt->second;
 		}
-
 		std::map<std::string, std::string>::const_iterator indexIt = server->_locationIndexes.find(locationPath);
 		if (indexIt != server->_locationIndexes.end() && !indexIt->second.empty()) {
 			index = indexIt->second;
 		}
 
-		size_t maxBodySize = server->_max_body_size;
 		std::map<std::string, size_t>::const_iterator maxBodySizeIt = server->_locationMaxBodySizes.find(locationPath);
 		if (maxBodySizeIt != server->_locationMaxBodySizes.end()) {
 			maxBodySize = maxBodySizeIt->second;
@@ -480,6 +483,7 @@ bool Server::is_method_allowed(const std::string &method, Client &client, const 
 		default:
 			return false;
 	}
+	std::cout << "locationPath: " << locationPath << std::endl;
 	if ((server->_allowedMethods[locationPath] & nummethode) != 0)
 		return true;
 	return false;
@@ -543,7 +547,7 @@ bool Server::handleFileUpload(const std::string& body,
 
 	size_t fileSize = dataEnd - headerEnd - 2;
 	struct stat dirStat;
-	if (stat(uploadDir.c_str(), &dirStat) != 0) {    
+	if (stat(uploadDir.c_str(), &dirStat) != 0) {
 		if (mkdir(uploadDir.c_str(), 0755) != 0) {
 			std::cerr << "Failed to create upload directory: " << uploadDir << std::endl;
 			return false;
@@ -552,12 +556,12 @@ bool Server::handleFileUpload(const std::string& body,
 		std::cerr << "Upload path is not a directory: " << uploadDir << std::endl;
 		return false;
 	}
-	
+
 	if (access(uploadDir.c_str(), W_OK) != 0) {
 		std::cerr << "No write permission for upload directory: " << uploadDir << std::endl;
 		return false;
 	}
-	
+
 	std::ofstream file((uploadDir + "/" + filename).c_str(), std::ios::binary);
 	if (!file.is_open())
 		return false;

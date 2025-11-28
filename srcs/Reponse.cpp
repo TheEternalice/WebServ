@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Reponse.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ade-rese <ade-rese@student.42.fr>          +#+  +:+       +#+        */
+/*   By: gpichon <gpichon@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 12:32:35 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/11/28 13:49:01 by ade-rese         ###   ########.fr       */
+/*   Updated: 2025/11/28 16:19:00 by gpichon          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,7 @@ Reponse::Reponse(std::string url, std::string root, std::string index, std::stri
 	this->_status_code = 0;
 	this->_status_text = "";
 	this->_up = false;
-	
+
 	std::string path;
 	std::string urlpath = url;
 
@@ -67,6 +67,8 @@ Reponse::Reponse(std::string url, std::string root, std::string index, std::stri
 		else
 			path = "." + urlpath;
 	}
+	std::cout << "url = " << url << std::endl;
+	std::cout << "path = "<< path << std::endl;
 
 	struct stat path_stat;
 	if (stat(path.c_str(), &path_stat) != 0) {

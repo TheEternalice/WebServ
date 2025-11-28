@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ade-rese <ade-rese@student.42.fr>          +#+  +:+       +#+        */
+/*   By: gpichon <gpichon@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/14 16:26:26 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/11/28 14:19:47 by ade-rese         ###   ########.fr       */
+/*   Updated: 2025/11/28 17:10:52 by gpichon          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -165,6 +165,7 @@ Reponse Request::handle_get(std::string root, std::string index, std::string loc
 	} catch (std::exception &e) {
 		std::string error = static_cast<std::string>(e.what());
 		if (error == "file" || error == "empty") {
+			std::cout << "je rentre la" << std::endl;
 			Reponse r;
 			r.set_status_code(500);
 			return r;
@@ -187,10 +188,11 @@ Reponse Request::execute_cgi_get(std::string& url, bool *testing) {
 	struct stat st;
 	if (stat(path.c_str(), &st) != 0)
 		throw std::runtime_error("file");
-		
-	if (st.st_size == 0)
+
+	if (st.st_size == 0) {
 		throw std::runtime_error("empty");
-		
+	}
+
 	if (access(("." + _url).c_str(), X_OK) != 0 || url == "/")
 		throw std::runtime_error("html");
 
@@ -345,7 +347,9 @@ Reponse Request::handle_post(std::string uploadDir) {
 	r = execute_cgi_post(_url, _body); // give the body to the CGI
 	if (r.get_status_code() == -1) {
 		std::string filePath = uploadDir + "/test.txt";
+		std::ofstream file(filePath.c_str(), std::ios::out);
 		if (access(filePath.c_str(), W_OK) != 0) {
+			std::cout << filePath << std::endl;
 			Reponse r;
 			r.set_status_code(403); // No permission to write
 			return r;
@@ -354,7 +358,7 @@ Reponse Request::handle_post(std::string uploadDir) {
 		if (out.is_open()) {
 			std::string body = _body;
 			std::string message;
-			
+
 			// search message in the body
 			size_t msgPos = body.find("message=");
 			if (msgPos != std::string::npos) {
@@ -364,9 +368,9 @@ Reponse Request::handle_post(std::string uploadDir) {
 				while ((plusPos = message.find("+")) != std::string::npos) {
 					message.replace(plusPos, 1, " ");
 				}
-				// search % for get hexadecimal values (ascii table)  
+				// search % for get hexadecimal values (ascii table)
 				size_t percentPos;
-				while ((percentPos = message.find("%")) != std::string::npos && 
+				while ((percentPos = message.find("%")) != std::string::npos &&
 					percentPos + 2 < message.length()) {
 					std::string hex = message.substr(percentPos + 1, 2);
 					std::istringstream iss(hex);
