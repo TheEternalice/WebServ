@@ -163,13 +163,6 @@ Reponse Request::handle_get(std::string root, std::string index, std::string loc
 			r.set_status_code(500);
 		return r;
 	} catch (std::exception &e) {
-		std::string error = static_cast<std::string>(e.what());
-		if (error == "file" || error == "empty") {
-			std::cout << "je rentre la" << std::endl;
-			Reponse r;
-			r.set_status_code(500);
-			return r;
-		}
 		Reponse r = Reponse(_url, root, index, locationPath, autoIndex, testing);
 		return r;
 	}
@@ -349,7 +342,6 @@ Reponse Request::handle_post(std::string uploadDir) {
 		std::string filePath = uploadDir + "/test.txt";
 		std::ofstream file(filePath.c_str(), std::ios::out);
 		if (access(filePath.c_str(), W_OK) != 0) {
-			std::cout << filePath << std::endl;
 			Reponse r;
 			r.set_status_code(403); // No permission to write
 			return r;

@@ -291,27 +291,33 @@ void Server::handle_request(Client &client) {
 
 	try {
 		std::string url = client.getRequest().get_url();
-		std::string locationPath;
+		std::string locationPath = "/";
 		std::string root = server->_root;
 		std::string index = server->_index;
 		size_t maxBodySize = server->_max_body_size;
 
-		if (url == "/")
-			locationPath = "/";
-		else {
-			size_t loca;
-			loca = url.find_last_of("/");
-			locationPath = url.substr(loca, (loca - url.size() - 1));
-			int newpos = url.rfind('/', loca);
-			if (access(url.c_str(), R_OK) != 0) {
-				std::cout << "je passe ici" << std::endl;
-				if (!newpos)
-					locationPath = root;
-				else
-					locationPath = url.substr(newpos, loca - newpos - 1);
+		for (std::map<std::string, std::string>::const_iterator it = server->_returnPaths.begin();
+			 it != server->_returnPaths.end(); ++it) {
+			const std::string &loc = it->first;
+			if (loc.empty())
+				continue;
+			if (url.compare(0, loc.size(), loc) == 0) {
+				if (locationPath == "/" || loc.size() > locationPath.size())
+					locationPath = loc;
 			}
 		}
-		std::cout << locationPath << std::endl;
+		for (std::map<std::string, int>::const_iterator it = server->_allowedMethods.begin();
+			 it != server->_allowedMethods.end(); ++it) {
+			const std::string &loc = it->first;
+			if (loc.empty())
+				continue;
+			if (url.compare(0, loc.size(), loc) == 0) {
+				if (locationPath == "/" || loc.size() > locationPath.size())
+					locationPath = loc;
+			}
+
+		}
+
 		std::map<std::string, std::string>::const_iterator rootIt = server->_locationRoots.find(locationPath);
 		if (rootIt != server->_locationRoots.end() && !rootIt->second.empty()) {
 			root = rootIt->second;
@@ -325,7 +331,6 @@ void Server::handle_request(Client &client) {
 		if (maxBodySizeIt != server->_locationMaxBodySizes.end()) {
 			maxBodySize = maxBodySizeIt->second;
 		}
-
 		std::map<std::string, std::string>::const_iterator returnIt = server->_returnPaths.find(locationPath);
 		if (returnIt != server->_returnPaths.end() && !returnIt->second.empty()) {
 			int redirectCode = 301;
@@ -483,7 +488,6 @@ bool Server::is_method_allowed(const std::string &method, Client &client, const 
 		default:
 			return false;
 	}
-	std::cout << "locationPath: " << locationPath << std::endl;
 	if ((server->_allowedMethods[locationPath] & nummethode) != 0)
 		return true;
 	return false;

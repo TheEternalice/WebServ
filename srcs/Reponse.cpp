@@ -62,13 +62,12 @@ Reponse::Reponse(std::string url, std::string root, std::string index, std::stri
 		else if (autoIndex || *testing)
 		{
 			path = root + urlpath;
-			*testing = false;
+			if (*testing == true)
+				*testing = false;
 		}
 		else
 			path = "." + urlpath;
 	}
-	std::cout << "url = " << url << std::endl;
-	std::cout << "path = "<< path << std::endl;
 
 	struct stat path_stat;
 	if (stat(path.c_str(), &path_stat) != 0) {
@@ -172,8 +171,6 @@ Reponse::Reponse(int num, std::string path) {
 	char c = 0;
 	while (bodyData.get(c)){ std::string s; s.push_back(c); _body += s; }
 
-
-	if (_body.empty()) std::cout << "body empty in constructor" << std::endl;
 	_headers["Content-Type"] = Server::get_content_type(path);
 	std::ostringstream oss;
 	if (_body.size() != 0){
