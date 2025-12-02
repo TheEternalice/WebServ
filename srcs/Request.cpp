@@ -6,7 +6,7 @@
 /*   By: gpichon <gpichon@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/14 16:26:26 by lde-merc          #+#    #+#             */
-/*   Updated: 2025/11/28 17:10:52 by gpichon          ###   ########.fr       */
+/*   Updated: 2025/12/02 17:19:50 by gpichon          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -404,6 +404,20 @@ Reponse Request::handle_post(std::string uploadDir) {
 // Execute a CGI, and give the body by STDIN to the script
 Reponse Request::execute_cgi_post(std::string& url, std::string& body) {
 	std::string path = "." + url;
+
+	struct stat st;
+
+	if (stat(path.c_str(), &st) != 0)
+		throw std::runtime_error("file");
+
+	if (S_ISDIR(st.st_mode)) {
+		throw std::runtime_error("html");
+	}
+
+	if (st.st_size == 0) {
+		throw std::runtime_error("empty");
+	}
+
 	if (access(path.c_str(), X_OK) != 0) {
 		Reponse r;
 		r.set_status_code(-1);
@@ -534,22 +548,25 @@ Reponse Request::execute_cgi_post(std::string& url, std::string& body) {
 *******************************************************/
 Reponse Request::handle_delete() {
 	std::string path = "." + _url;
+	Reponse r;
 
+	// Check if the file exists
+	if (access(path.c_str(), 0) != 0) {
+		r.set_status_code(404);
+		return r;
+	}
 	// Check if the file is writable
 	if (access(path.c_str(), W_OK) != 0) {
-		Reponse r;
 		r.set_status_code(403);
 		return r;
 	}
 
 	// Delete the file
 	if (unlink(path.c_str()) != 0) {
-		Reponse r;
 		r.set_status_code(500);
 		return r;
 	}
 
-	Reponse r;
 	r.set_status_code(200);
 	r.set_status_text("OK");
 	r.set_body("<p style='color:red;'>File deleted successfully</p>");
