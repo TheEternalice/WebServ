@@ -405,7 +405,7 @@ void Server::handle_request(Client &client) {
 			if (res.get_status_code() == 500)
 				res = _clientToSocket[client.get_fd()]._autoResponse[500];
 			if (res.get_status_code() == 504)
-				res = _clientToSocket[client.get_fd()]._autoResponse[500]; // 504 a envoyer sur page automatique
+				res = _clientToSocket[client.get_fd()]._autoResponse[500];
 		} else if (method == "POST") {
 			Request req = client.getRequest();
 			std::string contentType = req.getHeader("Content-Type");
@@ -459,7 +459,12 @@ void Server::handle_request(Client &client) {
 			res = server->_autoResponse[400];
 		}
 	} catch (std::runtime_error &e) {
-		res = server->_autoResponse[404];
+		std::string errorMsg = e.what();
+		if (errorMsg == "403") {
+			res = server->_autoResponse[403];
+		} else {
+			res = server->_autoResponse[404];
+		}
 	}
 
 	if (client.getRequest().getHeader("Connection") == "keep-alive") {

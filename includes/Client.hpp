@@ -41,7 +41,7 @@ class Client {
 		std::string getBufferOut();
 		Reponse getReponse();
 		int get_fd();
-		void setResponse(Reponse res);
+		void setResponse(const Reponse &res);
 		void setClosed();
 		
 	private:

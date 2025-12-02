@@ -13,6 +13,7 @@
 #include "../includes/Server.hpp"
 #include <iostream>
 #include <stdexcept>
+#include <unistd.h>
 
 extern Server* g_server;
 
@@ -41,7 +42,20 @@ int	main(int argc, char *argv[])
 			}
 			std::map<int, std::string>::const_iterator it;
 			for (it = so[i]._error_pages.begin(); it != so[i]._error_pages.end(); ++it) {
-				so[i]._autoResponse[it->first] = Reponse(it->first, so[i]._error_pages[it->first]);
+				if (access(it->second.c_str(), F_OK) == 0) {
+					try {
+						so[i]._autoResponse[it->first] = Reponse(it->first, it->second);
+					} catch (std::exception &e) {
+						so[i]._autoResponse[it->first] = Reponse::createDefaultErrorResponse(it->first);
+					}
+				} else {
+					so[i]._autoResponse[it->first] = Reponse::createDefaultErrorResponse(it->first);
+				}
+			}
+			for (int errorCode = 400; errorCode < 600; errorCode++) {
+				if (so[i]._autoResponse.find(errorCode) == so[i]._autoResponse.end()) {
+					so[i]._autoResponse[errorCode] = Reponse::createDefaultErrorResponse(errorCode);
+				}
 			}
 		}
 

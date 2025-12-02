@@ -36,6 +36,7 @@ class Reponse {
 		std::string to_string() const;
 
 		static Reponse make_500();
+		static Reponse createDefaultErrorResponse(int errorCode);
 		bool isKeepAlive() const;
 
 		int get_status_code() const;

@@ -182,6 +182,10 @@ Reponse Request::execute_cgi_get(std::string& url, bool *testing) {
 	if (stat(path.c_str(), &st) != 0)
 		throw std::runtime_error("file");
 
+	if (S_ISDIR(st.st_mode)) {
+		throw std::runtime_error("html");
+	}
+
 	if (st.st_size == 0) {
 		throw std::runtime_error("empty");
 	}
@@ -266,7 +270,6 @@ Reponse Request::execute_cgi_get(std::string& url, bool *testing) {
 				r.set_status_code(504);
 				return r;
 			}
-
 			usleep(1);
 		}
 

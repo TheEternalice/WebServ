@@ -97,10 +97,20 @@ int	Client::get_fd() {
 	return (_fd);
 }
 
-void Client::setResponse(Reponse res) {
+void Client::setResponse(const Reponse &res) {
 	_buffer_out.clear();
 	_buffer_out = res.to_string();
-	_reponse = res;
+	_reponse = Reponse();
+	std::map<std::string, std::string> headers = res.get_header();
+	for (std::map<std::string, std::string>::const_iterator it = headers.begin(); 
+		 it != headers.end(); ++it) {
+		std::string lowerKey = it->first;
+		std::transform(lowerKey.begin(), lowerKey.end(), lowerKey.begin(), ::tolower);
+		if (lowerKey == "connection") {
+			_reponse.set_header(it->first, it->second);
+			break;
+		}
+	}
 }
 
 bool Client::shouldClose() const {
