@@ -340,13 +340,55 @@ Reponse Request::handle_post(std::string uploadDir) {
 	}
 
 	Reponse r;
-	r = execute_cgi_post(_url, _body); // give the body to the CGI
-	if (r.get_status_code() == -1) {
-		std::string filePath = uploadDir + "/test.txt";
+	
+	std::string contentType = getHeader("Content-Type");
+	bool isPlainText = false;
+	bool isFormUrlEncoded = false;
+	if (!contentType.empty()) {
+		std::string lowerContentType = contentType;
+		for (size_t i = 0; i < lowerContentType.size(); ++i) {
+			lowerContentType[i] = std::tolower(lowerContentType[i]);
+		}
+		if (lowerContentType.find("text/plain") != std::string::npos || 
+			lowerContentType.find("plain/text") != std::string::npos) {
+			isPlainText = true;
+		}
+		if (lowerContentType.find("application/x-www-form-urlencoded") != std::string::npos) {
+			isFormUrlEncoded = true;
+		}
+	}
+	if (!isPlainText && !isFormUrlEncoded) {
+		r = execute_cgi_post(_url, _body); // give the body to the CGI
+	} else {
+		r.set_status_code(-1);
+	}
+	if (isPlainText || isFormUrlEncoded || r.get_status_code() == -1) {
+		std::string fileName = "test.txt"; // default filename
+		if (!_url.empty() && _url != "/") {
+			std::string url = _url;
+			if (url.size() > 1 && url[url.size() - 1] == '/') {
+				url = url.substr(0, url.size() - 1);
+			}
+			size_t lastSlash = url.find_last_of('/');
+			if (lastSlash != std::string::npos && lastSlash + 1 < url.size()) {
+				std::string potentialFileName = url.substr(lastSlash + 1);
+				size_t dotPos = potentialFileName.find_last_of('.');
+				if (dotPos != std::string::npos) {
+					std::string ext = potentialFileName.substr(dotPos + 1);
+					if (ext != "sh" && ext != "py" && ext != "cgi" && ext != "pl" && ext != "js" && ext != "cpp") {
+						fileName = potentialFileName;
+					}
+				} else {
+					fileName = potentialFileName + ".txt";
+				}
+			}
+		}
+		
+		std::string filePath = uploadDir + "/" + fileName;
 		std::ofstream file(filePath.c_str(), std::ios::out);
 		if (access(filePath.c_str(), W_OK) != 0) {
 			Reponse r;
-			r.set_status_code(403); // No permission to write
+			r.set_status_code(403);
 			return r;
 		}
 		std::ofstream out(filePath.c_str(), std::ios::binary | std::ios::app);
@@ -405,21 +447,24 @@ Reponse Request::handle_post(std::string uploadDir) {
 Reponse Request::execute_cgi_post(std::string& url, std::string& body) {
 	std::string path = "." + url;
 
+	Reponse r;
 	struct stat st;
 
-	if (stat(path.c_str(), &st) != 0)
-		throw std::runtime_error("file");
+	if (stat(path.c_str(), &st) != 0) {
+		r.set_status_code(-1);
+		return r;
+	}
 
 	if (S_ISDIR(st.st_mode)) {
 		throw std::runtime_error("html");
 	}
 
 	if (st.st_size == 0) {
-		throw std::runtime_error("empty");
+		r.set_status_code(-1);
+		return r;
 	}
 
 	if (access(path.c_str(), X_OK) != 0) {
-		Reponse r;
 		r.set_status_code(-1);
 		return r;
 	}
@@ -427,7 +472,6 @@ Reponse Request::execute_cgi_post(std::string& url, std::string& body) {
 	int pipe_in[2];
 	int pipe_out[2];
 	if (pipe(pipe_in) == -1 || pipe(pipe_out) == -1) {
-		Reponse r;
 		r.set_status_code(500);
 		r.set_status_text("Pipe error");
 		return r;
@@ -435,7 +479,6 @@ Reponse Request::execute_cgi_post(std::string& url, std::string& body) {
 
 	pid_t pid = fork();
 	if (pid < 0) {
-		Reponse r;
 		r.set_status_code(500);
 		r.set_status_text("Fork error");
 		return r;
@@ -520,7 +563,6 @@ Reponse Request::execute_cgi_post(std::string& url, std::string& body) {
 		} else {
 			content = cgi_output;
 		}
-		Reponse r;
 		r.set_status_code(200);
 		r.set_status_text("OK");
 		r.set_body(content);

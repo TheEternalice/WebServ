@@ -66,9 +66,8 @@ Reponse::Reponse(std::string url, std::string root, std::string index, std::stri
 				*testing = false;
 		}
 		else
-			path = "." + urlpath;
+			path = root + urlpath;
 	}
-
 	struct stat path_stat;
 	if (stat(path.c_str(), &path_stat) != 0) {
 		throw std::runtime_error("Can't open file");

@@ -442,7 +442,7 @@ void Server::handle_request(Client &client) {
 				} else {
 					res = server->_autoResponse[403];
 				}
-			} else {;
+			} else {
 				res = client.getRequest().handle_post(uploadDir);
 				if(res.get_status_code() == 500)
 					res = _clientToSocket[client.get_fd()]._autoResponse[500];
