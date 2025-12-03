@@ -588,8 +588,13 @@ Reponse Request::execute_cgi_post(std::string& url, std::string& body) {
 	* Return 403 if it's a directory
 	* Return 500 if server error
 *******************************************************/
-Reponse Request::handle_delete() {
-	std::string path = "." + _url;
+Reponse Request::handle_delete(std::string root) {
+	std::string path;
+	if (root.empty())
+		path = "." + _url;
+	else
+		path = root + _url;
+	
 	Reponse r;
 
 	// Check if the file exists

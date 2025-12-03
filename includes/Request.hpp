@@ -49,7 +49,7 @@ class Request {
 		Reponse execute_cgi_get(std::string& path, bool *testing);
 		Reponse execute_cgi_post(std::string& path, std::string& body);
 		Reponse handle_post(std::string uploadDir);
-		Reponse handle_delete();
+		Reponse handle_delete(std::string root);
 		void parseCookies();
 
 	private:

@@ -450,11 +450,13 @@ void Server::handle_request(Client &client) {
 					res = _clientToSocket[client.get_fd()]._autoResponse[403];
 			}
 		} else if (method == "DELETE") {
-			res = client.getRequest().handle_delete();
+			res = client.getRequest().handle_delete(root);
 			if (res.get_status_code() == 500)
 				res = _clientToSocket[client.get_fd()]._autoResponse[500];
 			if (res.get_status_code() == 403)
 				res = _clientToSocket[client.get_fd()]._autoResponse[403];
+			if (res.get_status_code() == 404)
+				res = _clientToSocket[client.get_fd()]._autoResponse[404];
 		} else {
 			res = server->_autoResponse[400];
 		}
